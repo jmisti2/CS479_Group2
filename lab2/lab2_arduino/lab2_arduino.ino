@@ -29,16 +29,9 @@ void setup() {
 
 void loop() {
   
-  if((digitalRead(10) == 1)||(digitalRead(11) == 1)){
-    Serial.println('!');
-  }
-  else{
-    // send the value of analog input 0:
-      Serial.print("HR: ");
-      Serial.println(analogRead(A0));
-      Serial.print("FSR: ");
-      Serial.println(analogRead(A1)); 
-  }
+  Serial.print(analogRead(A0));
+  Serial.print(",");
+  Serial.println(analogRead(A1)); 
   //Wait for a bit to keep serial data from saturating
   delay(500);
 }

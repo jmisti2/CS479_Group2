@@ -1,130 +1,205 @@
-/******************************************************************************
-Heart_Rate_Display.ino
-Demo Program for AD8232 Heart Rate sensor.
-Casey Kuhns @ SparkFun Electronics
-6/27/2014
-https://github.com/sparkfun/AD8232_Heart_Rate_Monitor
-The AD8232 Heart Rate sensor is a low cost EKG/ECG sensor.  This example shows
-how to create an ECG with real time display.  The display is using Processing.
-This sketch is based heavily on the Graphing Tutorial provided in the Arduino
-IDE. http://www.arduino.cc/en/Tutorial/Graph
-Resources:
-This program requires a Processing sketch to view the data in real time.
-Development environment specifics:
-  IDE: Arduino 1.0.5
-  Hardware Platform: Arduino Pro 3.3V/8MHz
-  AD8232 Heart Monitor Version: 1.0
-This code is beerware. If you see me (or any other SparkFun employee) at the
-local pub, and you've found our code helpful, please buy us a round!
-Distributed as-is; no warranty is given.
-******************************************************************************/
-
 import processing.serial.*;
+import grafica.*;
 
-Serial myPort;        // The serial port
-int xPos = 1;         // horizontal position of the graph
-float height_old = 0;
-float height_new = 0;
-float inByte = 0;
-int BPM = 0;
-int beat_old = 0;
-float[] beats = new float[500];  // Used to calculate average BPM
-int beatIndex;
-float threshold = 620.0;  //Threshold at which BPM calculation occurs
-boolean belowThreshold = true;
-PFont font;
+Serial myPort;
+// change the number below to match your port:
+String val;
+String heartrate = "-";
+String confidence = "-";
+String oxygen = "-";
+String status = "-";
+String resting = "-";
+String zone = "none";
+GPointsArray points = new GPointsArray(0);
+int nPoints = 0;
+ArrayList<Integer> pointsList = new ArrayList<Integer>();
+int elapsedSecs = 0;
+String time;
 
+int max = 0;
+int hard = 0;
+int moderate = 0;
+int light = 0;
+int vlight = 0;
 
 void setup () {
-  // set the window size:
-  size(1000, 400);        
-
-  // List all the available serial ports
-  println(Serial.list());
-  // Open whatever port is the one you're using.
-  myPort = new Serial(this, Serial.list()[2], 9600);
-  // don't generate a serialEvent() unless you get a newline character:
-  myPort.bufferUntil('\n');
-  // set inital background:
-  background(0xff);
-  font = createFont("Ariel", 12, true);
-}
-
-
-void draw () {
-     //Map and draw the line for new data point
-     inByte = map(inByte, 0, 1023, 0, height);
-     height_new = height - inByte; 
-     line(xPos - 1, height_old, xPos, height_new);
-     height_old = height_new;
-    
-      // at the edge of the screen, go back to the beginning:
-      if (xPos >= width) {
-        xPos = 0;
-        background(0xff);
-      } 
-      else {
-        // increment the horizontal position:
-        xPos++;
-      }
-      
-      // draw text for BPM periodically
-      if (millis() % 128 == 0){
-        fill(0xFF);
-        rect(0, 0, 200, 20);
-        fill(0x00);
-        text("BPM: " + inByte, 15, 10);
-      }
-}
-
-
-void serialEvent (Serial myPort) 
-{
-  // get the ASCII string:
-  String inString = myPort.readStringUntil('\n');
-
-  if (inString != null) 
-  {
-    // trim off any whitespace:
-    inString = trim(inString);
-
-    // If leads off detection is true notify with blue line
-    if (inString.equals("!")) 
-    { 
-      stroke(0, 0, 0xff); //Set stroke to blue ( R, G, B)
-      inByte = 512;  // middle of the ADC range (Flat Line)
-    }
-    // If the data is good let it through
-    else 
-    {
-      stroke(0xff, 0, 0); //Set stroke to red ( R, G, B)
-      inByte = float(inString); 
-      
-      // BPM calculation check
-      if (inByte > threshold && belowThreshold == true)
-      {
-        calculateBPM();
-        belowThreshold = false;
-      }
-      else if(inByte < threshold)
-      {
-        belowThreshold = true;
-      }
-    }
-  }
-}
+  size(700, 900);// window size
+  background(64,64,64);
   
-void calculateBPM () 
-{  
-  int beat_new = millis();    // get the current millisecond
-  int diff = beat_new - beat_old;    // find the time between the last two beats
-  float currentBPM = 60000 / diff;    // convert to beats per minute
-  beats[beatIndex] = currentBPM;  // store to array to convert the average
-  float total = 0.0;
-  for (int i = 0; i < 500; i++){
-    total += beats[i];
+  // List all the available serial ports
+  String portName = Serial.list()[3];
+  myPort = new Serial(this, portName, 115200);  
+  
+}
+
+void draw(){
+  background(64,64,64);
+  fill(255,255,255);
+  if(myPort.available() > 0){
+    val = myPort.readStringUntil('\n');
+    if(val != null){
+      //heartrate, confidence, oxygen, status
+      String[] list = split(val, ',');
+      heartrate = list[0];
+      confidence = list[1];
+      oxygen = list[2];
+      status = list[3];
+    }
   }
-  BPM = int(total / 500);
-  beat_old = beat_new;
-  beatIndex = (beatIndex + 1) % 500;  // cycle through the array instead of using FIFO queue
+  textSize(30);
+  text("Current bpm: " + heartrate, 10, 90);
+
+  if(int(heartrate) != 0){
+    points.add(nPoints, int(heartrate));
+    pointsList.add(int(heartrate));
+    nPoints++;
+    
   }
+  
+  if(pointsList.size() % 30 == 0 && pointsList.size() > 0){
+    int sum = 0;
+    for(int i = pointsList.size()-30; i < pointsList.size(); i++){
+      sum += pointsList.get(i);
+    }
+    double avg = sum/30;
+    resting = String.valueOf(avg);
+  }
+  
+  if(int(resting) > 0){
+    if(int(heartrate)-int(resting) >= 10){
+      println("Stressed");
+      myPort.write('1');
+    }
+    else{
+      println("Relaxed");
+      myPort.write('0');
+    }
+  }
+  
+    
+  text("Blood Oxygen: " + oxygen, 250, 90);
+  text("Confidence: " + confidence, 500, 90);
+  
+  text("Avg bpm: " + resting, 290, 450);
+  
+  
+  
+  color[] pointColors = new color[pointsList.size()];
+  
+  for(int i = 0; i < pointsList.size(); i++){
+    if(pointsList.get(i) >= int(198*.90)){
+      pointColors[i] = color(255,0,0);
+      max++;
+    }
+    else if(pointsList.get(i) >= int(198*.80)){
+      pointColors[i] = color(255,128,0);
+      hard++;
+    }
+    else if(pointsList.get(i) >= int(198*.70)){
+      pointColors[i] = color(0,153,0);
+      moderate++;
+    }
+    else if(pointsList.get(i) >= int(198*.60)){
+      pointColors[i] = color(0,128,255);
+      light++;
+    }
+    else if(pointsList.get(i) >= int(198*.50)){
+      pointColors[i] = color(160,160,160);
+      vlight++;
+    }
+    else{
+      pointColors[i] = color(0,0,0);
+    }
+  }
+    
+
+  // Create a new plot and set its position on the screen
+  GPlot plot = new GPlot(this);
+  plot.setPos(10, 110);
+  // or all in one go
+  // GPlot plot = new GPlot(this, 25, 25);
+
+  // Set the plot title and the axis labels
+  plot.setTitleText("Heart Rate");
+  plot.getXAxis().setAxisLabelText("Time Elapsed (s)");
+  plot.getYAxis().setAxisLabelText("BPM");
+  plot.setDim(580, 200);
+  
+
+  // Add the points
+  plot.setPoints(points);
+  plot.setPointColors(pointColors); 
+  
+
+  // Draw it!
+  plot.defaultDraw();
+  plot.activatePanning();
+  
+  elapsedSecs++;
+  
+  if(elapsedSecs%60 < 10){
+    time = (elapsedSecs/60)%60 + ":0" + (elapsedSecs%60);
+  }
+  else{
+    time = (elapsedSecs/60)%60 + ":" + (elapsedSecs%60);
+  }
+  
+  textSize(40);
+  text(time, 320, 40);  
+  
+  text("Exercise Zones", 230, 550);  
+  strokeWeight(0);
+  textSize(30);
+  rect(10, 570, 680, 310);
+  
+  fill(255,0,0);
+  rect(20, 580, 1+max, 50);
+  
+  fill(255,128,0);
+  rect(20, 640, 1+hard, 50);
+  
+  fill(0,153,0);
+  rect(20, 700, 1+moderate, 50);
+  
+  fill(0,128,255);
+  rect(20, 760, 1+light, 50);
+  
+  fill(160,160,160);
+  rect(20, 820, 1+vlight, 50);
+  
+  fill(0,0,0);
+  text(max + "s", 30+max, 615);
+  text(hard + "s", 30+hard, 675);
+  text(moderate + "s", 30+moderate, 735);
+  text(light + "s", 30+light, 795);
+  text(vlight + "s", 30+vlight, 855);
+  
+  fill(255,0,0);
+  rect(20, 485, 10, 10);
+  text("Max",50,500);
+  
+  fill(255,128,0);
+  rect(130, 485, 10, 10);
+  text("Hard",160,500);
+  
+  fill(0,153,0);
+  rect(250, 485, 10, 10);
+  text("Moderate",280,500);
+  
+  fill(0,128,255);
+  rect(420, 485, 10, 10);
+  text("Light",450,500);
+  
+  fill(160,160,160);
+  rect(530, 485, 10, 10);
+  text("Very Light",560,500);
+  
+  max = 0;
+  hard = 0;
+  moderate = 0;
+  light = 0;
+  vlight = 0;
+ 
+  
+  delay(1000);
+}
