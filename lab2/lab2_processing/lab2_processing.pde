@@ -105,7 +105,7 @@ void draw(){
       text("Age: " + ageInput, 375, 400);
       fill(255);
     } else if (fitnessMode){
-      
+
       textSize(30);
   
       text(millis()/60000 + ":" + millis()/1000,540,30);
@@ -145,23 +145,23 @@ void draw(){
       color[] pointColors = new color[pointsList.size()];
       
       for(int i = 0; i < pointsList.size(); i++){
-        if(pointsList.get(i) >= int(198*.90)){
+        if(pointsList.get(i) >= int(userMaxHeartrate*.90)){
           pointColors[i] = color(255,0,0);
           //max++;
         }
-        else if(pointsList.get(i) >= int(198*.80)){
+        else if(pointsList.get(i) >= int(userMaxHeartrate*.80)){
           pointColors[i] = color(255,128,0);
           //hard++;
         }
-        else if(pointsList.get(i) >= int(198*.70)){
+        else if(pointsList.get(i) >= int(userMaxHeartrate*.70)){
           pointColors[i] = color(0,153,0);
           //moderate++;
         }
-        else if(pointsList.get(i) >= int(198*.60)){
+        else if(pointsList.get(i) >= int(userMaxHeartrate*.60)){
           pointColors[i] = color(0,128,255);
           //light++;
         }
-        else if(pointsList.get(i) >= int(198*.50)){
+        else if(pointsList.get(i) >= int(userMaxHeartrate*.50)){
           pointColors[i] = color(160,160,160);
           //vlight++;
         }
