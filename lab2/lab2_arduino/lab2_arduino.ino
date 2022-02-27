@@ -1,37 +1,44 @@
-/******************************************************************************
-Heart_Rate_Display.ino
-Demo Program for AD8232 Heart Rate sensor.
-Casey Kuhns @ SparkFun Electronics
-6/27/2014
-https://github.com/sparkfun/AD8232_Heart_Rate_Monitor
-The AD8232 Heart Rate sensor is a low cost EKG/ECG sensor.  This example shows
-how to create an ECG with real time display.  The display is using Processing.
-This sketch is based heavily on the Graphing Tutorial provided in the Arduino
-IDE. http://www.arduino.cc/en/Tutorial/Graph
-Resources:
-This program requires a Processing sketch to view the data in real time.
-Development environment specifics:
-  IDE: Arduino 1.0.5
-  Hardware Platform: Arduino Pro 3.3V/8MHz
-  AD8232 Heart Monitor Version: 1.0
-This code is beerware. If you see me (or any other SparkFun employee) at the
-local pub, and you've found our code helpful, please buy us a round!
-Distributed as-is; no warranty is given.
-******************************************************************************/
+//lab 2
+
+long instance1 = 0, timer;
+double hr = 72, interval = 0;
+int value = 0, count = 0;  
+bool flag = 0;
+int threshold = 100; // to identify R peak
+int timer_value = 10000; // 10 seconds timer to calculate hr
 
 void setup() {
-  // initialize the serial communication:
   Serial.begin(9600);
   pinMode(10, INPUT); // Setup for leads off detection LO +
   pinMode(11, INPUT); // Setup for leads off detection LO -
-
 }
-
-void loop() {
-  
-  Serial.print(analogRead(A0));
-  Serial.print(",");
-  Serial.println(analogRead(A1)); 
-  //Wait for a bit to keep serial data from saturating
-  delay(500);
+void loop() { 
+  if((digitalRead(8) == 1)||(digitalRead(9) == 1)){
+    instance1 = micros();
+    timer = millis();
+  }
+  else {
+    value = analogRead(A0);
+    value = map(value, 250, 400, 0, 100); //to flatten the ecg values a bit
+    if((value > threshold) && (!flag)) {
+      count++;  
+      flag = 1;
+      interval = micros() - instance1; //RR interval
+      instance1 = micros(); 
+    }
+    else if(value < threshold) {
+      flag = 0;
+    }
+    if ((millis() - timer) > 10000) {
+      hr = count*6;
+      timer = millis();
+      count = 0; 
+    }
+    Serial.print(value);
+    Serial.print(",");
+    Serial.print(hr);
+    Serial.print(",");
+    Serial.println(analogRead(A1));
+    delay(1);
+  }
 }
