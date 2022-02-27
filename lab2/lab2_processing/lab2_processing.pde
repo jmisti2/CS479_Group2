@@ -20,7 +20,7 @@ void setup () {
   
   // List all the available serial ports
   String portName = Serial.list()[2];
-  myPort = new Serial(this, portName, 9600);  
+  myPort = new Serial(this, portName, 115200);  
   
 }
 
@@ -33,9 +33,12 @@ void draw(){
     if(val != null){
       //heartrate, confidence, oxygen, status
       String[] list = split(val, ',');
-      ecg = list[0];
-      hr = list[1];
-      fsr = list[2];
+      if(list.length == 3){
+        ecg = list[0];
+        hr = list[1];
+        fsr = list[2];
+      }
+      
     }
   }
   textSize(30);
@@ -65,6 +68,7 @@ void draw(){
   if(nPoints2 >= 200){
     points2.remove(0);
     points2.add(nPoints2, int(float(fsr)));
+    nPoints++;
     //pointsList2.add(int(fsr));
   }
   else{
