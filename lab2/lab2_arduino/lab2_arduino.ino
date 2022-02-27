@@ -36,7 +36,7 @@ void loop() {
     }
     Serial.print(value);
     Serial.print(",");
-    Serial.print(hr);
+    Serial.print(int(hr));
     Serial.print(",");
     Serial.println(analogRead(A1));
     delay(1);

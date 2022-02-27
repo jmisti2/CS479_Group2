@@ -29,6 +29,7 @@ void draw(){
   fill(255,255,255);
   if(myPort.available() > 0){
     val = myPort.readStringUntil('\n');
+    println(val);
     if(val != null){
       //heartrate, confidence, oxygen, status
       String[] list = split(val, ',');
@@ -67,7 +68,7 @@ void draw(){
     //pointsList2.add(int(fsr));
   }
   else{
-    points2.add(nPoints2, int(fsr));
+    points2.add(nPoints2, int(float(fsr)));
     //pointsList2.add(int(fsr));
   }
   
