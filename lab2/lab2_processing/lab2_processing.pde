@@ -32,11 +32,9 @@ void setup () {
   
   // List all the available serial ports
   String portName = Serial.list()[2];
-  myPort = new Serial(this, portName, 9600);  
+  myPort = new Serial(this, portName, 115200);  
   startingScene = true;
   ageInput = "";
-
-  
 }
 
 void draw(){
@@ -49,9 +47,12 @@ void draw(){
     if(val != null){
       //heartrate, confidence, oxygen, status
       String[] list = split(val, ',');
-      ecg = list[0];
-      hr = list[1];
-      fsr = list[2];
+      if(list.length == 3){
+        ecg = list[0];
+        hr = list[1];
+        fsr = list[2];
+      }
+      
     }
   }
 
@@ -107,6 +108,44 @@ void draw(){
     } else if (fitnessMode){
 
       textSize(30);
+  textSize(30);
+  
+  text(millis()/60000 + ":" + millis()/1000,540,30);
+  text("Heart Rate: " + hr, 10, 90);
+
+  //Adds points to ecg Plot
+  if(int(ecg) != 0){
+    if(nPoints >= 200){
+      points.remove(0);
+      points.add(nPoints, int(ecg));
+      pointsList.remove(0);
+      pointsList.add(int(hr));
+     }
+    else{
+      points.add(nPoints, int(ecg));
+      pointsList.add(int(hr));
+    }
+    nPoints++;
+    
+    
+  }
+  
+  text("FSR: " + fsr, 600, 90);
+  //Adds points to fsr Plot
+  if(nPoints2 >= 200){
+    points2.remove(0);
+    points2.add(nPoints2, int(float(fsr)));
+    nPoints++;
+    //pointsList2.add(int(fsr));
+  }
+  else{
+    points2.add(nPoints2, int(float(fsr)));
+    //pointsList2.add(int(fsr));
+  }
+  
+  nPoints2++;
+  
+  color[] pointColors = new color[pointsList.size()];
   
       text(millis()/60000 + ":" + millis()/1000,540,30);
       text("Heart Rate: " + hr, 10, 90);
