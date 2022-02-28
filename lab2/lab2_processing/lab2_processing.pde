@@ -139,7 +139,8 @@ void draw() {
         textSize(30);
 
         text(millis() / 60000 + ":" + (millis()/1000)%60, 540, 30);
-        text("Heart Rate: " + hr, 10, 90);
+        text("BPM: " + hr, 10, 90);
+        text("Resting BPM: " + hr, 10, 90);
 
         //Adds points to ecg Plot
         if (int(ecg) != 0) {
