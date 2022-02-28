@@ -16,6 +16,9 @@ int nPoints2 = 0;
 ArrayList < Integer > pointsList = new ArrayList < Integer > ();
 ArrayList < Integer > pointsList2 = new ArrayList < Integer > ();
 
+int exTime = 0;
+int inTime = 0;
+
 //flags for scene changes
 boolean stressMode;
 boolean fitnessMode;
@@ -27,14 +30,6 @@ boolean ageScene;
 String ageInput; //stores input of user
 int userAge; //Stores the age of the user
 int userMaxHeartrate; //220 - user age
-
-//breathing variables
-int breathCount = 0;
-int newCount = 0;
-boolean flag = false;
-int respRate = 0;
-int inhDur = 0;
-int exDur = 0;
 
 void setup() {
     size(1110, 600); // window size
@@ -137,8 +132,9 @@ void draw() {
     } else if (fitnessMode) {
 
         textSize(30);
+        textSize(30);
 
-        text(millis() / 60000 + ":" + (millis()/1000)%60, 540, 30);
+        text(millis() / 60000 + ":" + millis() / 1000, 540, 30);
         text("Heart Rate: " + hr, 10, 90);
 
         //Adds points to ecg Plot
@@ -153,44 +149,53 @@ void draw() {
                 pointsList.add(int(hr));
             }
             nPoints++;
+
+
         }
 
-        int fsrPoint = int(float(fsr));
-        
+        text("FSR: " + fsr, 600, 90);
         //Adds points to fsr Plot
-        if (nPoints2 >= 600) {
-          points2.remove(0);
+        if (nPoints2 >= 200) {
+            points2.remove(0);
+            points2.add(nPoints2, int(float(fsr)));
+            nPoints++;
+            //pointsList2.add(int(fsr));
+        } else {
+            points2.add(nPoints2, int(float(fsr)));
+            //pointsList2.add(int(fsr));
         }
-        if(fsrPoint > 100){
-          points2.add(nPoints2, fsrPoint);
-        }
-        
-        int threshold = 350;
-        
-        if(millis() > 5000){
-          if(fsrPoint > threshold){
-            if(!flag){
-              breathCount++;
-              flag = true;
+
+        nPoints2++;
+
+        text(millis() / 60000 + ":" + millis() / 1000, 540, 30);
+        text("Heart Rate: " + hr, 10, 90);
+
+        //Adds points to ecg Plot
+        if (int(ecg) != 0) {
+            if (nPoints >= 200) {
+                points.remove(0);
+                points.add(nPoints, int(ecg));
+                pointsList.remove(0);
+                pointsList.add(int(hr));
+            } else {
+                points.add(nPoints, int(ecg));
+                pointsList.add(int(hr));
             }
-            exDur++;
-          }
-          else if(fsrPoint < threshold){
-            inhDur++;
-            flag = false;
-          }
+            nPoints++;
+
+
         }
-        if((((millis()/1000)%60)%30) == 0){
-          respRate = breathCount*2;
+
+        text("FSR: " + fsr, 600, 90);
+        //Adds points to fsr Plot
+        if (nPoints2 >= 300) {
+            points2.remove(0);
+            points2.add(nPoints2, int(float(fsr)));
+            //pointsList2.add(int(fsr));
+        } else {
+            points2.add(nPoints2, int(float(fsr)));
+            //pointsList2.add(int(fsr));
         }
-        
-        
-        
-        text("FSR: " + fsrPoint, 600, 90);
-        text("Breath Count: " + breathCount, 600, 450);
-        text("Inhalation Duration: " + inhDur + "(ms)", 600, 480);
-        text("Exhalation Duration: " + exDur + "(ms)", 600, 510);
-        text("Respiration Rate: " + respRate + "(br/min)", 600, 540);
 
         nPoints2++;
 
