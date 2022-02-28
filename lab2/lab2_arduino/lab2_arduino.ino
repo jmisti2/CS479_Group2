@@ -13,7 +13,9 @@ void setup() {
   pinMode(11, INPUT); // Setup for leads off detection LO -
 }
 void loop() { 
-  timer = millis();
+  if((digitalRead(10) == 1)||(digitalRead(11) == 1)){
+    timer = millis();
+  }
   
   value = analogRead(A0);
   value = map(value, 250, 400, 0, 100); //to flatten the ecg values a bit
@@ -27,7 +29,7 @@ void loop() {
   if ((millis() - timer) > 10000) {
     hr = count*6;
     timer = millis();
-    count = 0; 
+    count = 0;
   }
   Serial.print(value);
   Serial.print(",");
