@@ -8,7 +8,12 @@ A3 - MF   -> D11 - BLUE
 int LF, HEEL, MM, MF = 0;
 const int MPU=0x68; 
 int16_t AcX,AcY,AcZ;
-int red_timer, yellow_timer, green_timer, blue_timer;
+int red_timer, yellow_timer, green_timer, blue_timer = 0;
+
+#define red_pin 3
+#define yellow_pin 5
+#define green_pin 9
+#define blue_pin 11
 
 
 void setup() {
@@ -19,62 +24,52 @@ void setup() {
   Wire.write(0);    
   Wire.endTransmission(true);
   Serial.begin(115200);
-  red_timer, yellow_timer, green_timer, blue_timer = 0;
 }
 
 void loop() {
   //FSR readings
   //!!Modify according to your own wiring!!
-  Serial.println("FSR");
 
-  LF = analogRead(A0);
-  Serial.print("LF : ");
+  LF = analogRead(A3);
   Serial.print(LF);
+  Serial.print(",");
 
-  HEEL = analogRead(A1);
-  Serial.print(", HEEL : ");
+  HEEL = analogRead(A2);
   Serial.print(HEEL);
+  Serial.print(",");
 
-  MM = analogRead(A2);
-  Serial.print(", MM : ");
+  MM = analogRead(A0);
   Serial.print(MM);
+  Serial.print(",");
 
-  MF = analogRead(A3);
-  Serial.print(", MF : ");
-  Serial.println(MF);
+  MF = analogRead(A1);
+  Serial.print(MF);
+  Serial.print(",");
   
   //If LF is activated turn the red LED on
-  if(LF > 11) {
-    digitalWrite(3, HIGH);
-    red_timer = millis();
+  if(LF > 100) {
+    digitalWrite(red_pin, HIGH);
+  }else{
+    digitalWrite(red_pin, LOW);
   }
-  //After .3 seconds of the red LED being on, turn it off
-  if(millis() - red_timer > 250) {digitalWrite(3, LOW);}
-
   //If HEEL is activated turn the yellow LED on
-  if(HEEL > 11) {
-    digitalWrite(6, HIGH);
-    yellow_timer = millis();
+  if(HEEL > 100) {
+    digitalWrite(yellow_pin, HIGH);
+  }else{
+    digitalWrite(yellow_pin, LOW);
   }
-  //After .3 seconds of the yellow LED being on, turn it off
-  if(millis() - yellow_timer > 250) {digitalWrite(6, LOW);}
-
   //If MM is activated turn the green LED on
-  if(MM > 11) {
-    digitalWrite(9, HIGH);
-    green_timer = millis();
+  if(MM > 100) {
+    digitalWrite(green_pin, HIGH);
+  }else{
+    digitalWrite(green_pin, LOW);
   }
-  //After .3 seconds of the green LED being on, turn it off
-  if(millis() - green_timer > 250) {digitalWrite(9, LOW);}
-  
   //If MF is activated turn the blue LED on
-  if(MF > 11) {
-    digitalWrite(11, HIGH);
-    blue_timer = millis();
+  if(MF > 100) {
+    digitalWrite(blue_pin, HIGH);
+  }else{
+    digitalWrite(blue_pin, LOW);
   }
-  //After .3 seconds of the blue LED being on, turn it off
-  if(millis() - blue_timer > 250) {digitalWrite(11, LOW);}
-  
 
   //Acelerometer
   Wire.beginTransmission(MPU);
@@ -84,10 +79,11 @@ void loop() {
   AcX=Wire.read()<<8|Wire.read();    
   AcY=Wire.read()<<8|Wire.read();  
   AcZ=Wire.read()<<8|Wire.read();
-  Serial.print("Accelerometer: ");
-  Serial.print("X = "); Serial.print(AcX);
-  Serial.print(" | Y = "); Serial.print(AcY);
-  Serial.print(" | Z = "); Serial.println(AcZ);  
+  Serial.print(AcX);
+  Serial.print(",");
+  Serial.print(AcY);
+  Serial.print(","); 
+  Serial.println(AcZ);  
 
   delay(300);
 }
