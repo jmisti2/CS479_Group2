@@ -223,7 +223,7 @@ void draw() {
     textSize(30);
     text("Foot Pressure Map", 75, 75);
     text("Step Count: " + stepCount, 870, 40);
-    text("Cadence: " + cadence + " s/min", 870, 80);
+    text("Cadence: " + cadence*2 + " s/min", 870, 80);
     text("x: "+ acx, 950, 500);
     text("y: "+ acy, 950, 520);
     text("z: "+ acz, 950, 540);
