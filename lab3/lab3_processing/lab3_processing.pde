@@ -8,8 +8,11 @@ PImage img;
 
 String val; 
 int stepCount, nstepCount, cadence = 0;
+int motionTime, prevTime = 0;
 boolean stepFlag = false;
+boolean motionFlag = false;
 int time;
+int timeCount = 0;
 
 int lf, heel, mm, mf, acx, acy, acz = 0;
 ArrayList<Integer> lfList = new ArrayList<Integer>();
@@ -17,6 +20,8 @@ ArrayList<Integer> heelList = new ArrayList<Integer>();
 ArrayList<Integer> mmList = new ArrayList<Integer>();
 ArrayList<Integer> mfList = new ArrayList<Integer>();
 ArrayList<Integer> cadenceList = new ArrayList<Integer>();
+ArrayList<Integer> aczList = new ArrayList<Integer>();
+ArrayList<Integer> motionList = new ArrayList<Integer>();
 
 void setup() {
     size(1110, 600); // window size
@@ -48,7 +53,6 @@ void draw() {
           acx = int(list[4]);
           acy = int(list[5]);
           acz = int(list[6]);
-          println(int(list[6]));
           lfList.add(heel);
         }
       }
@@ -162,17 +166,56 @@ void draw() {
     text("Foot Pressure Map", 75, 75);
     text("Step Count: " + stepCount, 870, 40);
     text("Cadence: " + cadence + " s/min", 870, 80);
-    text("x: "+ acx, 870, 100);
-    text("y: "+ acy, 870, 120);
-    text("z: "+ acz, 870, 140);
+    text("x: "+ acx, 950, 500);
+    text("y: "+ acy, 950, 520);
+    text("z: "+ acz, 950, 540);
     
     //text for determining if user is moving or still
-    if(acz > 16000 && acz < 17000){
-      text("Standing Still", 870, 180);
+    if(aczList.size() == 100){
+      aczList.remove(0);
+    }
+    aczList.add(acz);
+    
+    //////////////////////////SECTION III: Calculating motion and time in motion
+    int sum = 0;
+    for(int i = 0; i < aczList.size(); i++){
+      sum += aczList.get(i);
+    }
+    
+    int avg = 0;
+    if(aczList.size() == 100){
+      avg = sum/aczList.size();
+    }
+        
+    int sq = 0;
+    for(int i = 0; i < aczList.size(); i++){
+      sq += sq(aczList.get(i)-avg);
+    }
+    
+    float std = sqrt(sq/100);
+    
+    if(std > 150 && millis() > 5000){
+      fill(255,0,0);
+      text("In Motion", 870, 180);
+      motionFlag = true;
+      timeCount++;
+      if(timeCount == 1){
+        prevTime = millis();
+      }
     }
     else{
-      text("Moving", 870, 180);
+      fill(0,255,0);
+      text("Standing Still", 870, 180);
+      if(motionFlag){
+        motionTime = millis() - prevTime;
+        timeCount = 0;
+        motionFlag = false;
+      }
     }
+    //////////////////////////End of SECTION III
+    
+    fill(0,0,0);
+    text("Motion Time: " + motionTime/1000 + "s", 850, 220);
 
     fill(255, 255, 255);
     textSize(25);
