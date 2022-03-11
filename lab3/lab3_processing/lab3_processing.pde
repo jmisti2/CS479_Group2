@@ -40,7 +40,7 @@ void draw() {
       if(val != null){
         //heartrate, confidence, oxygen, status
         String[] list = split(val, ',');
-        if(list.length == 7){
+        if(list.length >= 7){
           lf = int(list[0]);
           heel = int(list[1]);
           mm = int(list[2]);
@@ -48,6 +48,7 @@ void draw() {
           acx = int(list[4]);
           acy = int(list[5]);
           acz = int(list[6]);
+          println(int(list[6]));
           lfList.add(heel);
         }
       }
@@ -161,7 +162,18 @@ void draw() {
     text("Foot Pressure Map", 75, 75);
     text("Step Count: " + stepCount, 870, 40);
     text("Cadence: " + cadence + " s/min", 870, 80);
+    text("x: "+ acx, 870, 100);
+    text("y: "+ acy, 870, 120);
+    text("z: "+ acz, 870, 140);
     
+    //text for determining if user is moving or still
+    if(acz > 16000 && acz < 17000){
+      text("Standing Still", 870, 180);
+    }
+    else{
+      text("Moving", 870, 180);
+    }
+
     fill(255, 255, 255);
     textSize(25);
     text("MF", 165, 220);

@@ -83,7 +83,8 @@ void loop() {
   Serial.print(",");
   Serial.print(AcY);
   Serial.print(","); 
-  Serial.println(AcZ);  
-
+  Serial.print(AcZ);  
+  Serial.println(","); 
+  
   delay(100);
 }
