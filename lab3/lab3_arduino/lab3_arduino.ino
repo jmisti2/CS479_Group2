@@ -85,5 +85,5 @@ void loop() {
   Serial.print(","); 
   Serial.println(AcZ);  
 
-  delay(300);
+  delay(100);
 }
