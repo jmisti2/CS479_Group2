@@ -32,17 +32,18 @@ ArrayList<Float> mfpList = new ArrayList<Float>();
 void setup() {
     size(1110, 600); // window size
     background(64, 64, 64);
-
     // List all the available serial ports
     String portName = Serial.list()[3];
     myPort = new Serial(this, portName, 115200);
     
     img = loadImage("foot.png");
     time = millis();
+    //frameRate(1);
 }
 
 void draw() {
     background(230,230,230);
+    colorMode(RGB);
     fill(255, 255, 255);
     
     if(myPort.available() > 0){
@@ -52,6 +53,7 @@ void draw() {
         //heartrate, confidence, oxygen, status
         String[] list = split(val, ',');
         if(list.length >= 7){
+          println("HERE");
           lf = int(list[0]);
           heel = int(list[1]);
           mm = int(list[2]);
@@ -60,6 +62,7 @@ void draw() {
           acy = int(list[5]);
           acz = int(list[6]);
           lfList.add(heel);
+          println(lf + "," + heel + "," + mm + "," + mf + "," + acx + "," + acy + "," + acz);
         }
       }
     }
@@ -136,86 +139,64 @@ void draw() {
     //////////////////////////End of SECTION I
     
     //////////////////////////Foot Pressure Graph
-    image(img, 0, 100, width/4 + 100, height/2 + 100);
-    
-    int white = 100;
-    int orange = 900;
-    int yellow = 500;
-    int green = 300;
+    image(img, -80, 55, width/4 + 300, height/2 + 250);
+
     
     //MF Circle
-    if(mf <= white){
+    if(mf < 35){
+      colorMode(RGB);
       fill(255,255,255);
+      circle(190, 180, 35);//mf coordinates for the circle
     }
-    else if(mf <= green){
-      fill(0,255,0);
+    else {
+      colorMode(HSB, 360, 100, 100);
+      noStroke();
+      drawGradient(190, 180, mf / 5, 340);
+      colorMode(RGB);
     }
-    else if(mf <= yellow){
-      fill(255,255,0);
-    }
-    else if(mf <= orange){
-      fill(255,69,0);
-    }
-    else{
-      fill(255,0,0);
-    }
-    circle(180, 180, 35);
     
     //MM Circle
-    if(mm <= white){
+    if(mm < 35){
+      colorMode(RGB);
       fill(255,255,255);
+      circle(160, 270, 35);
     }
-    else if(mm <= green){
-      fill(0,255,0);
+    else {
+      colorMode(HSB, 360, 100, 100);
+      noStroke();
+      drawGradient(160, 270, mm / 5, 130);
+      colorMode(RGB);
     }
-    else if(mm <= yellow){
-      fill(255,255,0);
-    }
-    else if(mm <= orange){
-      fill(255,69,0);
-    }
-    else{
-      fill(255,0,0);
-    }
-    circle(160, 270, 35);
         
     //LF Circle
-    if(lf <= white){
+    if(lf < 35){
+      colorMode(RGB);
       fill(255,255,255);
+      circle(280, 246, 35);
     }
-    else if(lf <= green){
-      fill(0,255,0);
+    else {
+      colorMode(HSB, 360, 100, 100);
+      noStroke();
+      drawGradient(280, 246, lf / 5, 211);
+      colorMode(RGB);
     }
-    else if(lf <= yellow){
-      fill(255,255,0);
-    }
-    else if(lf <= orange){
-      fill(255,69,0);
-    }
-    else{
-      fill(255,0,0);
-    }
-    circle(235, 240, 35);
     
     //Heel Circle
-    if(heel <= white){
+    if(heel < 35){
+      colorMode(RGB);
       fill(255,255,255);
+      circle(210, 520, 35);
     }
-    else if(heel <= green){
-      fill(0,255,0);
+    else {
+      colorMode(HSB, 360, 100, 100);
+      noStroke();
+      drawGradient(210, 520, heel / 5, 25);
+      colorMode(RGB);
     }
-    else if(heel <= yellow){
-      fill(255,255,0);
-    }
-    else if(heel <= orange){
-      fill(255,69,0);
-    }
-    else{
-      fill(255,0,0);//red
-    }
-    circle(190, 420, 35);
+    
     //////////////////////////End of Foot Pressure Graph
     
+    colorMode(RGB);
     fill(0,0,0);
     textSize(40);
     text(millis() / 60000 + ":" + (millis()/1000)%60, 540, 40);
@@ -223,7 +204,7 @@ void draw() {
     textSize(30);
     text("Foot Pressure Map", 75, 75);
     text("Step Count: " + stepCount, 870, 40);
-    text("Cadence: " + cadence*2 + " s/min", 870, 80);
+    text("Cadence: " + cadence + " s/min", 870, 80);
     text("x: "+ acx, 950, 500);
     text("y: "+ acy, 950, 520);
     text("z: "+ acz, 950, 540);
@@ -278,11 +259,19 @@ void draw() {
 
     fill(255, 255, 255);
     textSize(25);
-    text("MF", 165, 220);
+    text("MF", 175, 220);
     text("MM", 145, 310);
-    text("LF", 225, 280);
-    text("HEEL", 163, 460);
+    text("LF", 270, 290);
+    text("HEEL", 180, 560);
 
-    
-    delay(1);
+    //delay(1);
+}
+
+
+void drawGradient(float x, float y, int radius, int h) {
+  for (int r = radius; r > 0; --r) {
+    fill(h, 90, 90);
+    ellipse(x, y, r, r);
+    h = (h + 1) % 360;
+  }
 }
