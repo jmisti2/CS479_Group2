@@ -5,15 +5,20 @@ import grafica.*;
 
 Serial myPort;
 PImage img;
-
 String val; 
+
+//Variables for counting steps and cadence
 int stepCount, nstepCount, cadence = 0;
-int motionTime, prevTime = 0;
 boolean stepFlag = false;
-boolean motionFlag = false;
 int time;
+
+//Variables for detecting motion
+int motionTime, prevTime = 0;
+boolean motionFlag = false;
 int timeCount = 0;
 
+//variables for gait profiles
+float mfp = 0;
 int lf, heel, mm, mf, acx, acy, acz = 0;
 ArrayList<Integer> lfList = new ArrayList<Integer>();
 ArrayList<Integer> heelList = new ArrayList<Integer>();
@@ -22,6 +27,7 @@ ArrayList<Integer> mfList = new ArrayList<Integer>();
 ArrayList<Integer> cadenceList = new ArrayList<Integer>();
 ArrayList<Integer> aczList = new ArrayList<Integer>();
 ArrayList<Integer> motionList = new ArrayList<Integer>();
+ArrayList<Float> mfpList = new ArrayList<Float>();
 
 void setup() {
     size(1110, 600); // window size
@@ -58,7 +64,57 @@ void draw() {
       }
     }
     
-    //detects a step
+    //////////////////////////SECTION II: Detecting 5 Gait profiles
+    
+    mfp = ((mm + mf)*100)/(mm+mf+lf+heel+0.001);
+    
+    if(mfpList.size() == 300){
+      mfpList.remove(0);
+    }
+    mfpList.add(mfp);
+    
+    int sum2 = 0;
+    for(int i = 0; i < mfpList.size(); i++){
+      sum2 += mfpList.get(i);
+    }
+    
+    int avg2 = 0;
+    if(mfpList.size() == 300){
+      avg2 = sum2/mfpList.size();
+    }
+    
+    fill(0,0,0);
+    textSize(30);
+    text("MFP: " + mfp, 850, 280);
+    text("AVG MFP: " + avg2, 850, 310);
+    
+    String gaitProfile = "-";
+    
+    if(millis() > 3000){
+      if(avg2 < 10){
+        gaitProfile = "Heel";
+      }
+      else if(avg2 < 44){
+        gaitProfile = "Normal Gait";
+      }
+      else if(avg2 < 48){
+        gaitProfile = "In-toeing";
+      }
+      else if(avg2 < 65){
+        gaitProfile = "Out-toeing";
+      }
+      else if(avg2 < 80){
+        gaitProfile = "Tiptoeing";
+      }
+    }
+    
+    
+    
+    text(gaitProfile, 850, 340);
+
+    //////////////////////////End of SECTION II
+    
+    //////////////////////////SECTION I: Detects step count and cadence
     if(lfList.size() >= 2){
       //Checks for heel strike to count step
       if((lfList.get(lfList.size()-1) > 300) && (lfList.get(lfList.size()-2) < 100)){
@@ -77,8 +133,9 @@ void draw() {
       cadence = stepCount - cadence;
       time = millis();
     }
+    //////////////////////////End of SECTION I
     
-    
+    //////////////////////////Foot Pressure Graph
     image(img, 0, 100, width/4 + 100, height/2 + 100);
     
     int white = 100;
@@ -157,6 +214,7 @@ void draw() {
       fill(255,0,0);//red
     }
     circle(190, 420, 35);
+    //////////////////////////End of Foot Pressure Graph
     
     fill(0,0,0);
     textSize(40);
@@ -170,13 +228,14 @@ void draw() {
     text("y: "+ acy, 950, 520);
     text("z: "+ acz, 950, 540);
     
+    //////////////////////////SECTION III: Calculating motion and time in motion
+    
     //text for determining if user is moving or still
     if(aczList.size() == 100){
       aczList.remove(0);
     }
     aczList.add(acz);
     
-    //////////////////////////SECTION III: Calculating motion and time in motion
     int sum = 0;
     for(int i = 0; i < aczList.size(); i++){
       sum += aczList.get(i);
