@@ -6,6 +6,8 @@ import grafica.*;
 Serial myPort;
 PImage img;
 String val; 
+color bg, white;
+
 
 //Variables for counting steps and cadence
 int stepCount, nstepCount, cadence = 0;
@@ -31,19 +33,20 @@ ArrayList<Float> mfpList = new ArrayList<Float>();
 
 void setup() {
     size(1110, 600); // window size
-    background(64, 64, 64);
+    bg = color(240,240,240);
+    white = color(255,255,255);
+    background(bg);
     // List all the available serial ports
     String portName = Serial.list()[3];
     myPort = new Serial(this, portName, 115200);
     
     img = loadImage("foot.png");
     time = millis();
-    //frameRate(1);
 }
 
 void draw() {
-    background(230,230,230);
     colorMode(RGB);
+    background(bg);
     fill(255, 255, 255);
     
     if(myPort.available() > 0){
@@ -145,7 +148,7 @@ void draw() {
     //MF Circle
     if(mf < 35){
       colorMode(RGB);
-      fill(255,255,255);
+      fill(white);
       circle(190, 180, 35);//mf coordinates for the circle
     }
     else {
@@ -158,7 +161,7 @@ void draw() {
     //MM Circle
     if(mm < 35){
       colorMode(RGB);
-      fill(255,255,255);
+      fill(white);
       circle(160, 270, 35);
     }
     else {
@@ -171,7 +174,7 @@ void draw() {
     //LF Circle
     if(lf < 35){
       colorMode(RGB);
-      fill(255,255,255);
+      fill(white);
       circle(280, 246, 35);
     }
     else {
@@ -184,7 +187,7 @@ void draw() {
     //Heel Circle
     if(heel < 35){
       colorMode(RGB);
-      fill(255,255,255);
+      fill(white);
       circle(210, 520, 35);
     }
     else {
