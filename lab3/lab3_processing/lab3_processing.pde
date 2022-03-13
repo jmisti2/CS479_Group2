@@ -31,6 +31,9 @@ ArrayList<Integer> aczList = new ArrayList<Integer>();
 ArrayList<Integer> motionList = new ArrayList<Integer>();
 ArrayList<Float> mfpList = new ArrayList<Float>();
 
+Table steps_table;
+
+
 void setup() {
     size(1110, 600); // window size
     bg = color(240,240,240);
@@ -42,6 +45,18 @@ void setup() {
     
     img = loadImage("foot.png");
     time = millis();
+    
+    //Load the table
+    steps_table = loadTable("steps_table.csv", "header");
+    fake_count = 0;
+    ////If today's step count has not started, create a new table row
+    int last_day = Integer.parseInt(steps_table.getString(steps_table.getRowCount()-1, "day"));
+    if(last_day != day()) {
+      TableRow today_row = steps_table.addRow();
+      today_row.setString("day", String.valueOf(day()));
+      today_row.setString("month", String.valueOf(month()));
+      today_row.setString("steps", String.valueOf(0));
+    }
 }
 
 void draw() {
@@ -130,6 +145,10 @@ void draw() {
       if((lfList.get(lfList.size()-1) < 100) && (lfList.get(lfList.size()-2) > 300)){
         if(stepFlag){
           stepCount++;
+          //Increment the step count for today in the table
+          int current_steps = steps_table.getInt(steps_table.getRowCount()-1, "steps");
+          steps_table.setString(steps_table.getRowCount()-1, "steps", String.valueOf(current_steps + 1));
+          saveTable(steps_table, "steps_table.csv");
           stepFlag = false;
         }
       }
@@ -267,6 +286,26 @@ void draw() {
     text("LF", 270, 290);
     text("HEEL", 180, 560);
 
+    ///////////////////////////Start of section IV
+    
+    //Bar plot the previous 4 and current day step count
+    fill(255);
+    rect(380,320, 430,260);
+    textSize(15);
+    int start_x = 385; int start_y = 325;
+    for(int i = steps_table.getRowCount()-5; i < 5; i++) {
+      TableRow row = steps_table.getRow(i);
+      int steps = Integer.parseInt(row.getString("steps"));
+      String month = row.getString("month");
+      String day = row.getString("day");
+      fill(52,235,122);
+      rect(start_x, start_y, steps/20, 40);
+      fill(0);
+      text(steps + " steps " + month + "/" + day + "/" + year(), 385 + steps/20 + 10, start_y + 30);
+      start_y += 50; 
+    }
+    
+    ///////////////////////////End of section IV
     //delay(1);
 }
 
