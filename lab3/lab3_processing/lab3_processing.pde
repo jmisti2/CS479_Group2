@@ -48,7 +48,6 @@ void setup() {
     
     //Load the table
     steps_table = loadTable("steps_table.csv", "header");
-    fake_count = 0;
     ////If today's step count has not started, create a new table row
     int last_day = Integer.parseInt(steps_table.getString(steps_table.getRowCount()-1, "day"));
     if(last_day != day()) {
