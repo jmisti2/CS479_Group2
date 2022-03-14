@@ -30,8 +30,20 @@ ArrayList<Integer> cadenceList = new ArrayList<Integer>();
 ArrayList<Integer> aczList = new ArrayList<Integer>();
 ArrayList<Integer> motionList = new ArrayList<Integer>();
 ArrayList<Float> mfpList = new ArrayList<Float>();
+ArrayList<Integer> zA = new ArrayList<Integer>();
 
 Table steps_table;
+
+//Veriables for stride/step length
+float accel;
+float accelZ;
+float stepL;
+float strideL;
+float startStride;
+float strideTime;
+int timeInter;
+String stride;
+String step;
 
 
 void setup() {
@@ -40,7 +52,7 @@ void setup() {
     white = color(255,255,255);
     background(bg);
     // List all the available serial ports
-    String portName = Serial.list()[3];
+    String portName = Serial.list()[1];
     myPort = new Serial(this, portName, 115200);
     
     img = loadImage("foot.png");
@@ -135,7 +147,40 @@ void draw() {
     //////////////////////////End of SECTION II
     
     //////////////////////////SECTION I: Detects step count and cadence
-    if(lfList.size() >= 2){
+    
+    //Checks if in motion to start timer to calc stride time
+    if(motionFlag){
+        timeInter++;
+        if(timeCount == 1){
+          startStride = millis();
+        }
+        zA.add(acz); //get aceleration during movement
+        
+    }
+    
+    
+    
+    if(lfList.size() >= 2){ 
+      
+      if(motionFlag && lfList.size() >= 2){ //completed stride
+        strideTime = millis(); //time stride was completed
+        float motionTime = strideTime - startStride;
+        int asum = 0;
+        for(int i = 0; i < zA.size(); i++){
+          asum += zA.get(i);
+        }
+    
+        float avga = asum/aczList.size();
+        println("time interval " +motionTime);
+        strideL = abs(avga) * motionTime *motionTime;
+        stepL = strideL /2;
+        //stride = nf(strideL, 0, 2);
+        //step = nf(stepL, 0, 2);
+      }
+      text("Stride Length:  " + strideL, 850, 400);
+      text("Step Length:  " + stepL, 850, 430);
+        
+      
       //Checks for heel strike to count step
       if((lfList.get(lfList.size()-1) > 300) && (lfList.get(lfList.size()-2) < 100)){
         stepFlag = true;
@@ -148,6 +193,7 @@ void draw() {
           int current_steps = steps_table.getInt(steps_table.getRowCount()-1, "steps");
           steps_table.setString(steps_table.getRowCount()-1, "steps", String.valueOf(current_steps + 1));
           saveTable(steps_table, "steps_table.csv");
+          
           stepFlag = false;
         }
       }
@@ -157,6 +203,7 @@ void draw() {
       cadence = stepCount - cadence;
       time = millis();
     }
+   
     //////////////////////////End of SECTION I
     
     //////////////////////////Foot Pressure Graph
@@ -224,11 +271,8 @@ void draw() {
     
     textSize(30);
     text("Foot Pressure Map", 75, 75);
-    text("Step Count: " + stepCount, 870, 40);
-    text("Cadence: " + cadence*2 + " s/min", 870, 80);
-    text("x: "+ acx, 950, 500);
-    text("y: "+ acy, 950, 520);
-    text("z: "+ acz, 950, 540);
+    text("Step Count: " + stepCount, 850, 40);
+    text("Cadence: " + cadence*2 + " s/min", 850, 80);
     
     //////////////////////////SECTION III: Calculating motion and time in motion
     
@@ -255,7 +299,7 @@ void draw() {
     
     float std = sqrt(sq/100);
     
-    if(std > 150 && millis() > 5000){
+    if(std > 250 && millis() > 5000){
       fill(255,0,0);
       text("In Motion", 870, 180);
       motionFlag = true;
@@ -289,9 +333,9 @@ void draw() {
     
     //Bar plot the previous 4 and current day step count
     fill(255);
-    rect(380,320, 430,260);
+    rect(380,120, 430,260);
     textSize(15);
-    int start_x = 385; int start_y = 325;
+    int start_x = 385; int start_y = 125;
     for(int i = steps_table.getRowCount()-5; i < 5; i++) {
       TableRow row = steps_table.getRow(i);
       int steps = Integer.parseInt(row.getString("steps"));
