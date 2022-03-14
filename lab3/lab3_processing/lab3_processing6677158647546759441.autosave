@@ -6,7 +6,7 @@ import grafica.*;
 Serial myPort;
 PImage img;
 String val; 
-color bg, white, green;
+color bg, white;
 
 
 //Variables for counting steps and cadence
@@ -30,32 +30,17 @@ ArrayList<Integer> cadenceList = new ArrayList<Integer>();
 ArrayList<Integer> aczList = new ArrayList<Integer>();
 ArrayList<Integer> motionList = new ArrayList<Integer>();
 ArrayList<Float> mfpList = new ArrayList<Float>();
-ArrayList<Integer> zA = new ArrayList<Integer>();
-GPointsArray points = new GPointsArray(0);
-int nPoints = 0;
 
 Table steps_table;
-
-//Veriables for stride/step length
-float accel;
-float accelZ;
-float stepL;
-float strideL;
-float startStride;
-float strideTime;
-int timeInter;
-String stride;
-String step;
 
 
 void setup() {
     size(1110, 600); // window size
     bg = color(240,240,240);
     white = color(255,255,255);
-    green = color(52,235,122);
     background(bg);
     // List all the available serial ports
-    String portName = Serial.list()[3];
+    String portName = Serial.list()[2];
     myPort = new Serial(this, portName, 115200);
     
     img = loadImage("foot.png");
@@ -118,16 +103,12 @@ void draw() {
       avg2 = sum2/mfpList.size();
     }
     
-    fill(white);
-    rect(840, 210, 235, 140);
-    
     fill(0,0,0);
     textSize(30);
-    text("Gait Profile", 850, 240);
     text("MFP: " + mfp, 850, 280);
     text("AVG MFP: " + avg2, 850, 310);
     
-    String gaitProfile = "Reading";
+    String gaitProfile = "-";
     
     if(millis() > 3000){
       if(avg2 < 10){
@@ -154,44 +135,7 @@ void draw() {
     //////////////////////////End of SECTION II
     
     //////////////////////////SECTION I: Detects step count and cadence
-    
-    //Checks if in motion to start timer to calc stride time
-    if(motionFlag){
-        timeInter++;
-        if(timeCount == 1){
-          startStride = millis();
-        }
-        zA.add(acz); //get aceleration during movement
-        
-    }
-    
-    
-    
-    if(lfList.size() >= 2){ 
-      
-      if(motionFlag && lfList.size() >= 2){ //completed stride
-        strideTime = millis(); //time stride was completed
-        float motionTime = strideTime - startStride;
-        int asum = 0;
-        for(int i = 0; i < zA.size(); i++){
-          asum += zA.get(i);
-        }
-    
-        float avga = asum/aczList.size();
-        println("time interval " +motionTime);
-        strideL = abs(avga) * motionTime *motionTime;
-        stepL = strideL /2;
-        //stride = nf(strideL, 0, 2);
-        //step = nf(stepL, 0, 2);
-      }
-      
-      fill(white);
-      rect(840, 400, 235, 115);
-      fill(0);
-      text("Stride Length:  " + strideL, 850, 450);
-      text("Step Length:  " + stepL, 850, 480);
-        
-      
+    if(lfList.size() >= 2){
       //Checks for heel strike to count step
       if((lfList.get(lfList.size()-1) > 300) && (lfList.get(lfList.size()-2) < 100)){
         stepFlag = true;
@@ -204,7 +148,6 @@ void draw() {
           int current_steps = steps_table.getInt(steps_table.getRowCount()-1, "steps");
           steps_table.setString(steps_table.getRowCount()-1, "steps", String.valueOf(current_steps + 1));
           saveTable(steps_table, "steps_table.csv");
-          
           stepFlag = false;
         }
       }
@@ -213,10 +156,7 @@ void draw() {
     if (millis() > time + 30000){
       cadence = stepCount - cadence;
       time = millis();
-      points.add(nPoints, stepCount);
-      nPoints++;
     }
-   
     //////////////////////////End of SECTION I
     
     //////////////////////////Foot Pressure Graph
@@ -284,15 +224,14 @@ void draw() {
     
     textSize(30);
     text("Foot Pressure Map", 75, 75);
-    text("Step Count: " + stepCount, 380, 305);
-    text("Cadence: " + cadence*2 + " s/min", 595, 305);
+    text("Step Count: " + stepCount, 870, 40);
+    text("Cadence: " + cadence*2 + " s/min", 870, 80);
+    text("x: "+ acx, 950, 500);
+    text("y: "+ acy, 950, 520);
+    text("z: "+ acz, 950, 540);
     
     //////////////////////////SECTION III: Calculating motion and time in motion
-    fill(white);
-    stroke(1);
-    rect(840, 40, 235, 115);
-    fill(0);
-    text("Motion Detection", 850, 70);
+    
     //text for determining if user is moving or still
     if(aczList.size() == 100){
       aczList.remove(0);
@@ -315,10 +254,10 @@ void draw() {
     }
     
     float std = sqrt(sq/100);
-    stroke(1);
-    if(std > 250 && millis() > 5000){
+    
+    if(std > 150 && millis() > 5000){
       fill(255,0,0);
-      text("In Motion", 850, 110);
+      text("In Motion", 870, 180);
       motionFlag = true;
       timeCount++;
       if(timeCount == 1){
@@ -327,21 +266,19 @@ void draw() {
     }
     else{
       fill(0,255,0);
-      text("Standing Still", 850, 110);
+      text("Standing Still", 870, 180);
       if(motionFlag){
         motionTime = millis() - prevTime;
         timeCount = 0;
         motionFlag = false;
       }
     }
-    
-    
     //////////////////////////End of SECTION III
     
     fill(0,0,0);
-    text("Motion Time: " + motionTime/1000 + "s", 850, 140);
+    text("Motion Time: " + motionTime/1000 + "s", 850, 220);
 
-    fill(white);
+    fill(255, 255, 255);
     textSize(25);
     text("MF", 175, 220);
     text("MM", 145, 310);
@@ -351,17 +288,16 @@ void draw() {
     ///////////////////////////Start of section IV
     
     //Bar plot the previous 4 and current day step count
-    stroke(1);
-    fill(white);
-    rect(380,320, 430,260);
+    fill(255);
+    rect(380,195, 430,260);
     textSize(15);
-    int start_x = 385; int start_y = 330;
+    int start_x = 385; int start_y = 200;
     for(int i = steps_table.getRowCount()-5; i < 5; i++) {
       TableRow row = steps_table.getRow(i);
       int steps = Integer.parseInt(row.getString("steps"));
       String month = row.getString("month");
       String day = row.getString("day");
-      fill(green);
+      fill(52,235,122);
       rect(start_x, start_y, steps/20, 40);
       fill(0);
       text(steps + " steps " + month + "/" + day + "/" + year(), 385 + steps/20 + 10, start_y + 30);
@@ -369,25 +305,7 @@ void draw() {
     }
     
     ///////////////////////////End of section IV
-    
-    // Create a new plot and set its position on the screen
-    GPlot plot = new GPlot(this);
-    plot.setBgColor(white);
-    plot.setBoxBgColor(white);
-    plot.setPos(380, 50);
-
-    // Set the plot title and the axis labels
-    plot.setTitleText("Step Counter");
-    plot.getXAxis().setAxisLabelText("Time Elapsed (30s)");
-    plot.getYAxis().setAxisLabelText("Steps");
-    plot.setDim(330, 120);
-
-    // Add the points
-    plot.setPoints(points);
-
-    // Draw it!
-    plot.defaultDraw();
-    plot.activatePanning();
+    //delay(1);
 }
 
 
