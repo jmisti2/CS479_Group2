@@ -199,12 +199,12 @@ void draw() {
           if (millis() > time2 + 300){
             stepCount++;
             time2 = millis();
+            //Increment the step count for today in the table
+            int current_steps = steps_table.getInt(steps_table.getRowCount()-1, "steps");
+            steps_table.setString(steps_table.getRowCount()-1, "steps", String.valueOf(current_steps + 1));
+            saveTable(steps_table, "steps_table.csv");
+            stepFlag = false;
           }
-          //Increment the step count for today in the table
-          int current_steps = steps_table.getInt(steps_table.getRowCount()-1, "steps");
-          steps_table.setString(steps_table.getRowCount()-1, "steps", String.valueOf(current_steps + 1));
-          saveTable(steps_table, "steps_table.csv");
-          stepFlag = false;
         }
       }
     }
