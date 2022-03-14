@@ -12,12 +12,13 @@ color bg, white, green;
 //Variables for counting steps and cadence
 int stepCount, nstepCount, cadence = 0;
 boolean stepFlag = false;
-int time;
+int time, time2;
 
 //Variables for detecting motion
 int motionTime, prevTime = 0;
 boolean motionFlag = false;
 int timeCount = 0;
+int timeCount2 = 0;
 
 //variables for gait profiles
 float mfp = 0;
@@ -80,12 +81,10 @@ void draw() {
     
     if(myPort.available() > 0){
       val = myPort.readStringUntil('\n');
-      println(val);
       if(val != null){
         //heartrate, confidence, oxygen, status
         String[] list = split(val, ',');
         if(list.length >= 7){
-          println("HERE");
           lf = int(list[0]);
           heel = int(list[1]);
           mm = int(list[2]);
@@ -94,7 +93,7 @@ void draw() {
           acy = int(list[5]);
           acz = int(list[6]);
           lfList.add(heel);
-          println(lf + "," + heel + "," + mm + "," + mf + "," + acx + "," + acy + "," + acz);
+          //println(lf + "," + heel + "," + mm + "," + mf + "," + acx + "," + acy + "," + acz);
         }
       }
     }
@@ -169,7 +168,7 @@ void draw() {
     
     if(lfList.size() >= 2){ 
       
-      if(motionFlag && lfList.size() >= 2){ //completed stride
+      if(motionFlag){ //completed stride
         strideTime = millis(); //time stride was completed
         float motionTime = strideTime - startStride;
         int asum = 0;
@@ -178,7 +177,6 @@ void draw() {
         }
     
         float avga = asum/aczList.size();
-        println("time interval " +motionTime);
         strideL = abs(avga) * motionTime *motionTime;
         stepL = strideL /2;
         //stride = nf(strideL, 0, 2);
@@ -191,20 +189,21 @@ void draw() {
       text("Stride Length:  " + strideL, 850, 450);
       text("Step Length:  " + stepL, 850, 480);
         
-      
       //Checks for heel strike to count step
-      if((lfList.get(lfList.size()-1) > 300) && (lfList.get(lfList.size()-2) < 100)){
+      if(lfList.get(lfList.size()-2) - lfList.get(lfList.size()-1) > 100){
         stepFlag = true;
       }
       
-      if((lfList.get(lfList.size()-1) < 100) && (lfList.get(lfList.size()-2) > 300)){
+      if(lfList.get(lfList.size()-1) - lfList.get(lfList.size()-2) < -100){
         if(stepFlag){
-          stepCount++;
+          if (millis() > time2 + 300){
+            stepCount++;
+            time2 = millis();
+          }
           //Increment the step count for today in the table
           int current_steps = steps_table.getInt(steps_table.getRowCount()-1, "steps");
           steps_table.setString(steps_table.getRowCount()-1, "steps", String.valueOf(current_steps + 1));
           saveTable(steps_table, "steps_table.csv");
-          
           stepFlag = false;
         }
       }
