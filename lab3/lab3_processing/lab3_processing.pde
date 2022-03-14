@@ -355,7 +355,7 @@ void draw() {
     rect(380,320, 430,260);
     textSize(15);
     int start_x = 385; int start_y = 330;
-    for(int i = steps_table.getRowCount()-5; i < 5; i++) {
+    for(int i = steps_table.getRowCount()-5; i < steps_table.getRowCount(); i++) {
       TableRow row = steps_table.getRow(i);
       int steps = Integer.parseInt(row.getString("steps"));
       String month = row.getString("month");
