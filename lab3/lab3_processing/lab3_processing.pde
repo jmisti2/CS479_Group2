@@ -56,7 +56,7 @@ void setup() {
     green = color(52,235,122);
     background(bg);
     // List all the available serial ports
-    String portName = Serial.list()[3];
+    String portName = Serial.list()[2];
     myPort = new Serial(this, portName, 115200);
     
     img = loadImage("foot.png");
