@@ -1,4 +1,5 @@
 import java.util.ArrayList; 
+import processing.serial.*;
 
 
 public class Food {
@@ -57,7 +58,7 @@ public class Snake {
     }
   }
   public void update() {
-    println("total : " + this.total + " tail size : " + this.tail.size());
+    //println("total : " + this.total + " tail size : " + this.tail.size());
     //If the snake hasn't eaten food, just shift it forward
     if(this.total == this.tail.size()) {
       for(int i = 0; i < this.tail.size() - 1; i++) {
@@ -67,7 +68,7 @@ public class Snake {
       head.add(this.x);
       head.add(this.y);
       this.tail.set(this.total - 1, head);
-      println("yessS");
+      //println("yessS");
     } else {
       ArrayList<Integer> head = new ArrayList<Integer>();
       head.add(this.x);
@@ -113,6 +114,8 @@ public class Snake {
 
 Snake snake;
 Food food;
+Serial myPort;
+String val;
 
 int boardWidth = 600;
 int boardHeight = 500;
@@ -127,12 +130,41 @@ void setup() {
   rect(boardX, boardY, boardWidth, boardHeight);
   snake = new Snake();
   pickFoodLocation();
+  
+  //connect to the port
+  String portName = Serial.list()[3];
+  myPort = new Serial(this, portName, 115200);
 }
 
 
 void draw() {
   background(0);
   background(255);
+  
+  //get input from the board
+  if(myPort.available() > 0){
+      val = myPort.readStringUntil('\n');
+      if(val != null){
+        println(val);
+        val = val.trim();
+        if(val.equals("5")) {
+          snake.dir(-1, 0);
+          println("sensor pressed : 5");
+        } else if(val.equals("3")) {
+          snake.dir(0, 1);
+          println("sensor pressed : 3");
+        } else if(val.equals("7")) {
+          snake.dir(1, 0);
+          println("sensor pressed : 7");
+        } else if(val.equals("1")) {
+          snake.dir(0, -1);
+          println("sensor pressed : 1");
+        }
+      }
+    }
+  
+  
+  
   //draw the board
   fill(0);
   rect(100, 100, 600, 600);
@@ -148,7 +180,7 @@ void draw() {
     pickFoodLocation();
   } 
   rect(food.x, food.y, snake.scale, snake.scale);
-  println("food x: " + food.x + " food y: " + food.y);  
+  //println("food x: " + food.x + " food y: " + food.y);  
 }
 
 
@@ -158,7 +190,7 @@ void pickFoodLocation() {
   food = new Food(floor(random(cols)), floor(random(rows)));
   food.mult(snake.scale);
   food.setX(food.x + boardX);//ensures food.x starts inside the board
-  food.setY(food.y + boardY);//ensures food.y starts inSide the board
+  food.setY(food.y + boardY);//ensures food.y starts innside the board
 }
 
 void keyPressed() {
