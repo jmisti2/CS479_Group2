@@ -23,13 +23,14 @@ public class Food {
   
 }
 public class Snake {
-  int x = 100;
-  int y = 100;
+  int x = boardX;
+  int y = boardY;
   int xspeed = 1;
   int yspeed = 0;
   int squareSize = 20;
   int scale = 20;
   int total = 1;
+  boolean gameLost = false;
   //List of integer lists(actually tuples of x,y coordinates)
   //Stores the coordinates of each square in the snake's body
   ArrayList<ArrayList<Integer>> tail; 
@@ -47,13 +48,16 @@ public class Snake {
     for(int i = 0; i < this.tail.size(); i++) {
       ArrayList<Integer> pos = this.tail.get(i);
       float dist = dist(this.x, this.y, pos.get(0), pos.get(1));
-      if(dist < 2) {
+      if(dist < 2 && this.total != 1) {
         this.total = 1;
         this.tail = new ArrayList<ArrayList<Integer>>();
         ArrayList<Integer> startSnake = new ArrayList<Integer>();
-        startSnake.add(100);//index 0 = x
-        startSnake.add(100);//index 1 = y
+        startSnake.add(boardX);//index 0 = x
+        startSnake.add(boardY);//index 1 = y
         this.tail.add(startSnake);
+        this.gameLost = true;
+        
+        println("collision");
       }
     }
   }
@@ -79,8 +83,8 @@ public class Snake {
     this.x += this.xspeed * this.scale;
     this.y += this.yspeed * this.scale;
     
-    this.x = constrain(this.x, 100, 700 - this.squareSize);
-    this.y = constrain(this.y, 100, 700 - this.squareSize);
+    this.x = constrain(this.x, boardX, boardX + boardWidth - this.squareSize);
+    this.y = constrain(this.y, boardY, boardY + boardHeight - this.squareSize);
 
   }
   
@@ -111,31 +115,64 @@ public class Snake {
   
 }
 
+//Images <arrow_orientation_brightness> i.e a_l_d = arrow_left_dark, a_u_l = arrow_up_light
+PImage a_u_l;
+PImage a_d_l;
+PImage a_l_l;
+PImage a_r_l;
+PImage a_u_d;
+PImage a_d_d;
+PImage a_l_d;
+PImage a_r_d;
+PImage bg;
 
 Snake snake;
 Food food;
 Serial myPort;
 String val;
+PFont mainFont;
+PFont titleFont;
 
 int boardWidth = 600;
 int boardHeight = 500;
 int boardX = 100;
-int boardY = 100;
+int boardY = 250;
 
 boolean introScreen = true;
 boolean blink = false;
+boolean pause = false;
 int prevTime;
+
+//flags to keep track of direction before pause
+boolean left = false;
+boolean right = false;
+boolean up = false;
+boolean down = false;
+int pausecount = 0; // to keep track of pause and unpause
 
 void setup() {
   frameRate(10);
   size(800,800);
   background(255);
-  stroke(255);
   fill(0);
   rect(boardX, boardY, boardWidth, boardHeight);
   snake = new Snake();
   pickFoodLocation();
+  mainFont = loadFont("Ravie-48.vlw");
+  titleFont = loadFont("Jokerman-Regular-48.vlw");
   prevTime = millis();
+  
+  
+  //load the images
+  a_u_l = loadImage("arrow_imgs/a_u_l.png");
+  a_d_l = loadImage("arrow_imgs/a_d_l.png");
+  a_l_l = loadImage("arrow_imgs/a_l_l.png");
+  a_r_l = loadImage("arrow_imgs/a_r_l.png");
+  a_u_d = loadImage("arrow_imgs/a_u_d.png");
+  a_d_d = loadImage("arrow_imgs/a_d_d.png");
+  a_l_d = loadImage("arrow_imgs/a_l_d.png");
+  a_r_d = loadImage("arrow_imgs/a_r_d.png");
+  bg = loadImage("background/background_dark.jpg");//source: https://wallpapers-hd-wide.com/1245-green-leaves-texture-background_wallpaper.html
   
   //connect to the port
   //String portName = Serial.list()[3];
@@ -171,12 +208,11 @@ void draw() {
     
     text("Start", width/2-42, height/2+5);
     
-  }
-  else{
-    //get input from the board
-    strokeWeight(0);
+  }else {
     background(0);
-    background(255);
+    image(bg, 0, 0, width, height);
+    
+    //get input from the board
     //if(myPort.available() > 0){
     //    val = myPort.readStringUntil('\n');
     //    if(val != null){
@@ -198,24 +234,74 @@ void draw() {
     //    }
     //  }
     
-    //draw the board
-    fill(0);
-    rect(100, 100, 600, 600);
-    //Draw the snake
-    snake.selfCollision();
-    snake.update();
-    snake.show();
     
-    //draw the food
-    // If the food is eaten, chenge the location
-    fill(255, 0, 100);
-    if(snake.eat(food)) {
-      pickFoodLocation();
+    //draw the title
+    noStroke();
+    fill(112, 209, 15);
+    textFont(titleFont, 50);
+    text("SNAKE", 320, 50);
+    
+    //draw the board
+    fill(6, 15, 0);
+    rect(boardX, boardY, boardWidth, boardHeight);
+    
+    //Draw board frame
+    fill(86, 89, 83);
+    //left side
+    rect(boardX - 25, boardY, 25, boardHeight);
+    //right side
+    rect(boardX + boardWidth, boardY, 25, boardHeight);
+    //top side
+    rect(boardX - 25, boardY - 25, 50 + boardWidth, 25);
+    //bottom side
+    rect(boardX - 25, boardY + boardHeight, 50 + boardWidth, 25);
+    
+    //draw the score
+    fill(112, 209, 15);
+    textFont(mainFont, 30);
+    text("Score: " + snake.total, boardX - 25, boardY - 40);
+    
+    //draw the arrows
+    //up arrow
+    image(a_u_d, 268, 70, 300,300);
+    //down arrow
+    image(a_d_d, 272, 100, 300, 300);
+    //left arrow
+    image(a_l_d, 234, 8, 300, 300);
+    //right arrow
+    image(a_r_d, 311, -43, 300, 300);
+    
+    //Draw the snake
+    //the game is ongoing
+    if(!snake.gameLost) {
+      snake.selfCollision();
+      snake.update();
+      snake.show();
+      //draw the food
+      // If the food is eaten, chenge the location
+      fill(204, 0, 0);
+      stroke(255, 77, 77);
+      if(snake.eat(food)) {
+        pickFoodLocation();
+      } 
+      rect(food.x, food.y, snake.scale, snake.scale);
     } 
-    rect(food.x, food.y, snake.scale, snake.scale);
-    //println("food x: " + food.x + " food y: " + food.y);  
+    //the user lost
+    else {
+      //Show the game lost screen
+      fill(13, 26, 2);
+      stroke(67, 115, 20);
+      rect(200, 200, 400, 300, 20);
+      fill(112, 209, 15);
+      textFont(mainFont, 30);
+      text("GAME OVER!", 270, 280);
+      textSize(20);
+      fill(96, 166, 36);
+      text("Press Pause button to restart", 220, 370); //press q 
+      text("the game", 320, 400);
+    }
   }
-  
+
 }
 
 
@@ -228,17 +314,71 @@ void pickFoodLocation() {
   food.setY(food.y + boardY);//ensures food.y starts innside the board
 }
 
+
+
 void keyPressed() {
   if(key == 'a') {
-    snake.dir(-1, 0);
+    if(pause == false){
+      image(a_l_l, 180, -40, 300, 300);
+      snake.dir(-1, 0);
+      up = false;
+      down = false;
+      left = true;
+      right = false;
+    }
   } else if(key == 's') {
-    snake.dir(0, 1);
+    if(pause == false){
+      image(a_d_l, 220, 100, 300, 300);
+      snake.dir(0, 1);
+      up = false;
+      down = true;
+      left = false;
+      right = false;
+    }
   } else if(key == 'd') {
-    snake.dir(1, 0);
+    if(pause ==false){
+      image(a_r_l, 260, 8, 300, 300);
+      snake.dir(1, 0);
+      up = false;
+      down = false;
+      left = false;
+      right = true;
+    }
   } else if(key == 'w') {
-    snake.dir(0, -1);
+    if(pause == false){
+      image(a_u_l, 220, 70, 300,300);
+      snake.dir(0, -1);
+      up = true;
+      down = false;
+      left = false;
+      right = false;
+    }
   }
   else if(key == 'q') {
-    introScreen = false;
+    //restarts the game
+    if(key == 'q' && snake.gameLost){
+      snake.gameLost = false;
+    } else {
+      introScreen = false;
+      pausecount++;
+      if(pausecount > 1){ // past intro screen
+        if (pausecount%2 == 0){
+          pause = true;
+          snake.dir(0,0);
+         }else {
+           
+           pause = false;
+           if(up == true){
+             snake.dir(0,-1);
+           }else if(down == true){
+             snake.dir(0,1);
+           }else if(left == true){
+             snake.dir(-1,0);
+           }else if(right == true){
+             snake.dir(1,0);
+           }
+         }
+      }
+    }
   }
 }
