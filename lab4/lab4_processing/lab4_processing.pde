@@ -122,65 +122,100 @@ int boardHeight = 500;
 int boardX = 100;
 int boardY = 100;
 
+boolean introScreen = true;
+boolean blink = false;
+int prevTime;
+
 void setup() {
   frameRate(10);
   size(800,800);
   background(255);
+  stroke(255);
   fill(0);
   rect(boardX, boardY, boardWidth, boardHeight);
   snake = new Snake();
   pickFoodLocation();
+  prevTime = millis();
   
   //connect to the port
-  String portName = Serial.list()[3];
-  myPort = new Serial(this, portName, 115200);
+  //String portName = Serial.list()[3];
+  //myPort = new Serial(this, portName, 115200);
 }
 
 
 void draw() {
-  background(0);
-  background(255);
-  
-  //get input from the board
-  if(myPort.available() > 0){
-      val = myPort.readStringUntil('\n');
-      if(val != null){
-        println(val);
-        val = val.trim();
-        if(val.equals("5")) {
-          snake.dir(-1, 0);
-          println("sensor pressed : 5");
-        } else if(val.equals("3")) {
-          snake.dir(0, 1);
-          println("sensor pressed : 3");
-        } else if(val.equals("7")) {
-          snake.dir(1, 0);
-          println("sensor pressed : 7");
-        } else if(val.equals("1")) {
-          snake.dir(0, -1);
-          println("sensor pressed : 1");
-        }
+  if(introScreen){
+    background(0);
+    textSize(100);
+    fill(255,0,100);
+    text("Snake", width/2-120, height/2-100);
+    fill(255);
+    rect(width/2-70, height/2-50,160,80,10);
+    textSize(50);
+    fill(0);
+    strokeWeight(5);
+    
+    //blinking button
+    if(millis() > prevTime + 500){
+      if(blink){
+        stroke(104, 176, 62);
+        blink = false;
       }
+      else{
+        stroke(0);
+        blink = true;
+      }
+      
+      prevTime = millis();
     }
+    
+    text("Start", width/2-42, height/2+5);
+    
+  }
+  else{
+    //get input from the board
+    strokeWeight(0);
+    background(0);
+    background(255);
+    //if(myPort.available() > 0){
+    //    val = myPort.readStringUntil('\n');
+    //    if(val != null){
+    //      println(val);
+    //      val = val.trim();
+    //      if(val.equals("5")) {
+    //        snake.dir(-1, 0);
+    //        println("sensor pressed : 5");
+    //      } else if(val.equals("3")) {
+    //        snake.dir(0, 1);
+    //        println("sensor pressed : 3");
+    //      } else if(val.equals("7")) {
+    //        snake.dir(1, 0);
+    //        println("sensor pressed : 7");
+    //      } else if(val.equals("1")) {
+    //        snake.dir(0, -1);
+    //        println("sensor pressed : 1");
+    //      }
+    //    }
+    //  }
+    
+    //draw the board
+    fill(0);
+    rect(100, 100, 600, 600);
+    //Draw the snake
+    snake.selfCollision();
+    snake.update();
+    snake.show();
+    
+    //draw the food
+    // If the food is eaten, chenge the location
+    fill(255, 0, 100);
+    if(snake.eat(food)) {
+      pickFoodLocation();
+    } 
+    rect(food.x, food.y, snake.scale, snake.scale);
+    //println("food x: " + food.x + " food y: " + food.y);  
+  }
   
-  
-  
-  //draw the board
-  fill(0);
-  rect(100, 100, 600, 600);
-  //Draw the snake
-  snake.selfCollision();
-  snake.update();
-  snake.show();
-  
-  //draw the food
-  // If the food is eaten, chenge the location
-  fill(255, 0, 100);
-  if(snake.eat(food)) {
-    pickFoodLocation();
-  } 
-  rect(food.x, food.y, snake.scale, snake.scale);
-  //println("food x: " + food.x + " food y: " + food.y);  
 }
 
 
@@ -202,5 +237,8 @@ void keyPressed() {
     snake.dir(1, 0);
   } else if(key == 'w') {
     snake.dir(0, -1);
+  }
+  else if(key == 'q') {
+    introScreen = false;
   }
 }
