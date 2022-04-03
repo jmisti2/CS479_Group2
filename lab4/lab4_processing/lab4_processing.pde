@@ -175,7 +175,7 @@ void setup() {
   bg = loadImage("background/background_dark.jpg");//source: https://wallpapers-hd-wide.com/1245-green-leaves-texture-background_wallpaper.html
   
   //connect to the port
-  //String portName = Serial.list()[3];
+  //String portName = Serial.list()[1];
   //myPort = new Serial(this, portName, 115200);
 }
 
@@ -214,25 +214,83 @@ void draw() {
   }else {
     background(0);
     image(bg, 0, 0, width, height);
-    
-    //get input from the board
+
+    ////get input from the board
     //if(myPort.available() > 0){
     //    val = myPort.readStringUntil('\n');
     //    if(val != null){
     //      println(val);
     //      val = val.trim();
-    //      if(val.equals("5")) {
-    //        snake.dir(-1, 0);
-    //        println("sensor pressed : 5");
-    //      } else if(val.equals("3")) {
-    //        snake.dir(0, 1);
-    //        println("sensor pressed : 3");
-    //      } else if(val.equals("7")) {
-    //        snake.dir(1, 0);
-    //        println("sensor pressed : 7");
-    //      } else if(val.equals("1")) {
-    //        snake.dir(0, -1);
-    //        println("sensor pressed : 1");
+    //      if(val.equals("7")) { //Left
+    //        if(pause == false){
+    //          image(a_l_l, 180, -40, 300, 300);
+    //          snake.dir(-1, 0);
+    //          up = false;
+    //          down = false;
+    //          left = true;
+    //          right = false;
+    //        }
+    //        println("sensor pressed : left");
+            
+    //      } else if(val.equals("3")) { // down
+    //        if(pause == false){
+    //          image(a_d_l, 220, 100, 300, 300);
+    //          snake.dir(0, 1);
+    //          up = false;
+    //          down = true;
+    //          left = false;
+    //          right = false;
+    //        }
+    //        println("sensor pressed : down");
+            
+    //      } else if(val.equals("9")) { //right
+    //        if(pause ==false){
+    //          image(a_r_l, 260, 8, 300, 300);
+    //          snake.dir(1, 0);
+    //          up = false;
+    //          down = false;
+    //          left = false;
+    //          right = true;
+    //        }
+    //        println("sensor pressed : right");
+            
+    //      } else if(val.equals("5")) {// up
+          
+    //        if(pause == false){
+    //          image(a_u_l, 220, 70, 300,300);
+    //          snake.dir(0, -1);
+    //          up = true;
+    //          down = false;
+    //          left = false;
+    //          right = false;
+    //        }
+    //        println("sensor pressed : up");
+    //      } else if(val.equals("1")) { //select/pause
+    //         //restarts the game
+    //          if(key == 'q' && snake.gameLost){
+    //            snake.gameLost = false;
+    //          } else {
+    //            introScreen = false;
+    //            pausecount++;
+    //            if(pausecount > 1){ // past intro screen
+    //              if (pausecount%2 == 0){
+    //                pause = true;
+    //                snake.dir(0,0);
+    //               }else {
+                     
+    //                 pause = false;
+    //                 if(up == true){
+    //                   snake.dir(0,-1);
+    //                 }else if(down == true){
+    //                   snake.dir(0,1);
+    //                 }else if(left == true){
+    //                   snake.dir(-1,0);
+    //                 }else if(right == true){
+    //                   snake.dir(1,0);
+    //                 }
+    //               }
+    //            }
+    //         }
     //      }
     //    }
     //  }
