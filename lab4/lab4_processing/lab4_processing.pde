@@ -1,6 +1,6 @@
+//inspired by: https://www.youtube.com/watch?v=AaGK-fj-BAM
 import java.util.ArrayList; 
 import processing.serial.*;
-
 
 public class Food {
   int x;
@@ -171,17 +171,51 @@ void setup() {
   bg = loadImage("background/background_dark.jpg");//source: https://wallpapers-hd-wide.com/1245-green-leaves-texture-background_wallpaper.html
   
   //connect to the port
-  //String portName = Serial.list()[1];
-  //myPort = new Serial(this, portName, 115200);
+  String portName = Serial.list()[3];
+  myPort = new Serial(this, portName, 115200);
 }
 
 
 void draw() {
+  
+  //get input from the board
+  if(myPort.available() > 0){
+      val = myPort.readStringUntil('\n');
+      if(val != null){
+        println(val);
+        val = val.trim();
+        if(val.equals("5")) {//left arrow
+          snake.dir(-1, 0);
+          println("sensor pressed : 5(left arrow)");//down arrow
+        } else if(val.equals("3")) {
+          snake.dir(0, 1);
+          println("sensor pressed : 3(down arrow)");
+        } else if(val.equals("7")) {//right arrow
+          if(snake.gameLost){
+            snake.gameLost = false;
+          } else {snake.dir(1, 0);}
+          println("sensor pressed : 7 (right arrow)");
+        } else if(val.equals("1")) {//up arrow
+          if(introScreen) {
+            introScreen = false;
+          } else { snake.dir(0, -1);}
+          println("sensor pressed : 1(arrow up)");
+        }
+        else if(val.equals("9")) {//pause button
+          if(!paused) {
+            paused = true;
+          } else {
+            paused = false;
+          }
+          println("paused button");
+        }
+      }
+   }
+  
+  
   if(introScreen){
     background(0);
     image(bg, 0, 0, width, height);
-    //textSize(100);
-    //fill(255,0,100);
     fill(112, 209, 15);
     textFont(titleFont, 120);
     text("Snake", width/2-180, height/2-100);
@@ -210,87 +244,6 @@ void draw() {
   }else {
     background(0);
     image(bg, 0, 0, width, height);
-
-    ////get input from the board
-    //if(myPort.available() > 0){
-    //    val = myPort.readStringUntil('\n');
-    //    if(val != null){
-    //      println(val);
-    //      val = val.trim();
-    //      if(val.equals("7")) { //Left
-    //        if(pause == false){
-    //          image(a_l_l, 180, -40, 300, 300);
-    //          snake.dir(-1, 0);
-    //          up = false;
-    //          down = false;
-    //          left = true;
-    //          right = false;
-    //        }
-    //        println("sensor pressed : left");
-            
-    //      } else if(val.equals("3")) { // down
-    //        if(pause == false){
-    //          image(a_d_l, 220, 100, 300, 300);
-    //          snake.dir(0, 1);
-    //          up = false;
-    //          down = true;
-    //          left = false;
-    //          right = false;
-    //        }
-    //        println("sensor pressed : down");
-            
-    //      } else if(val.equals("9")) { //right
-    //        if(pause ==false){
-    //          image(a_r_l, 260, 8, 300, 300);
-    //          snake.dir(1, 0);
-    //          up = false;
-    //          down = false;
-    //          left = false;
-    //          right = true;
-    //        }
-    //        println("sensor pressed : right");
-            
-    //      } else if(val.equals("5")) {// up
-          
-    //        if(pause == false){
-    //          image(a_u_l, 220, 70, 300,300);
-    //          snake.dir(0, -1);
-    //          up = true;
-    //          down = false;
-    //          left = false;
-    //          right = false;
-    //        }
-    //        println("sensor pressed : up");
-    //      } else if(val.equals("1")) { //select/pause
-    //         //restarts the game
-    //          if(key == 'q' && snake.gameLost){
-    //            snake.gameLost = false;
-    //          } else {
-    //            introScreen = false;
-    //            pausecount++;
-    //            if(pausecount > 1){ // past intro screen
-    //              if (pausecount%2 == 0){
-    //                pause = true;
-    //                snake.dir(0,0);
-    //               }else {
-                     
-    //                 pause = false;
-    //                 if(up == true){
-    //                   snake.dir(0,-1);
-    //                 }else if(down == true){
-    //                   snake.dir(0,1);
-    //                 }else if(left == true){
-    //                   snake.dir(-1,0);
-    //                 }else if(right == true){
-    //                   snake.dir(1,0);
-    //                 }
-    //               }
-    //            }
-    //         }
-    //      }
-    //    }
-    //  }
-    
     
     //draw the title
     noStroke();
@@ -372,12 +325,9 @@ void draw() {
       fill(96, 166, 36);
       text("Press Right Arrow to", 240, 370); //press q 
       text("restart the game", 290, 400);
-    }
-    
+    }    
   }
-
 }
-
 
 void pickFoodLocation() {
   int cols = floor(boardWidth / snake.scale);
@@ -387,8 +337,6 @@ void pickFoodLocation() {
   food.setX(food.x + boardX);//ensures food.x starts inside the board
   food.setY(food.y + boardY);//ensures food.y starts innside the board
 }
-
-
 
 void keyPressed() {
   if(key == 'a') {
