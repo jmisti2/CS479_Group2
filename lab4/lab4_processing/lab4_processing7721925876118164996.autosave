@@ -1,6 +1,6 @@
-//inspired by: https://www.youtube.com/watch?v=AaGK-fj-BAM
 import java.util.ArrayList; 
 import processing.serial.*;
+
 
 public class Food {
   int x;
@@ -171,16 +171,45 @@ void setup() {
   bg = loadImage("background/background_dark.jpg");//source: https://wallpapers-hd-wide.com/1245-green-leaves-texture-background_wallpaper.html
   
   //connect to the port
-  String portName = Serial.list()[2];
-  myPort = new Serial(this, portName, 115200);
+  //String portName = Serial.list()[3];
+  //myPort = new Serial(this, portName, 115200);
 }
 
 
 void draw() {
-
+  //get input from the board
+  if(myPort.available() > 0){
+      val = myPort.readStringUntil('\n');
+      if(val != null){
+        println(val);
+        val = val.trim();
+        //left
+        if(val.equals("0")) {
+          snake.dir(-1, 0);
+          println("sensor pressed : 5");
+        } 
+        //down
+        else if(val.equals("1")) {
+          snake.dir(0, 1);
+          println("sensor pressed : 3");
+        } 
+        //right
+        else if(val.equals("2")) {
+          snake.dir(1, 0);
+          println("sensor pressed : 7");
+        } 
+        //up
+        else if(val.equals("3")) {
+          snake.dir(0, -1);
+          println("sensor pressed : 1");
+        }
+      }
+    }
   if(introScreen){
     background(0);
     image(bg, 0, 0, width, height);
+    //textSize(100);
+    //fill(255,0,100);
     fill(112, 209, 15);
     textFont(titleFont, 120);
     text("Snake", width/2-180, height/2-100);
@@ -209,6 +238,7 @@ void draw() {
   }else {
     background(0);
     image(bg, 0, 0, width, height);
+    
     
     //draw the title
     noStroke();
@@ -290,77 +320,12 @@ void draw() {
       fill(96, 166, 36);
       text("Press Right Arrow to", 240, 370); //press q 
       text("restart the game", 290, 400);
-    }    
+    }
+    
   }
-  
-  //get input from the board
-  if(myPort.available() > 0){
-      val = myPort.readStringUntil('\n');
-      if(val != null){
-        println(val);
-        val = val.trim();
-        if(val.equals("0")) {//left arrow
-          if(pause == false){
-            image(a_l_l, 180, -40, 300, 300);
-            snake.dir(-1, 0);
-            up = false;
-            down = false;
-            left = true;
-            right = false;
-          }
-          println("sensor pressed : (left arrow)");
 
-        } else if(val.equals("1")) {
-
-          if(snake.gameLost){
-            snake.gameLost = false;
-           } 
-          if(pause == false){
-            image(a_d_l, 220, 100, 300, 300);
-            snake.dir(0, 1);
-            up = false;
-            down = true;
-            left = false;
-            right = false;
-          }
-          println("sensor pressed : (down arrow)");
-
-        } else if(val.equals("2")) {//right arrow
-          if(pause ==false){
-            image(a_r_l, 260, 8, 300, 300);
-            snake.dir(1, 0);
-            up = false;
-            down = false;
-            left = false;
-            right = true;
-          }
-          println("sensor pressed : 7 (right arrow)");
-        } else if(val.equals("3")) {//up arrow
-          if(introScreen) {
-            introScreen = false;
-          } else { 
-            if(pause == false){
-              image(a_u_l, 220, 70, 300,300);
-              snake.dir(0, -1);
-              up = true;
-              down = false;
-              left = false;
-              right = false;
-            }
-          }
-          println("sensor pressed : 1(arrow up)");
-        }
-        else if(val.equals("4")) {//pause button
-          if(!paused) {
-            paused = true;
-          } else {
-            paused = false;
-          }
-          println("paused button");
-        }
-      }
-   }
 }
+
 
 void pickFoodLocation() {
   int cols = floor(boardWidth / snake.scale);
@@ -370,6 +335,8 @@ void pickFoodLocation() {
   food.setX(food.x + boardX);//ensures food.x starts inside the board
   food.setY(food.y + boardY);//ensures food.y starts innside the board
 }
+
+
 
 void keyPressed() {
   if(key == 'a') {
@@ -391,7 +358,7 @@ void keyPressed() {
       right = false;
     }
   } else if(key == 'd') {
-    if(pause==false){
+    if(pause ==false){
       image(a_r_l, 260, 8, 300, 300);
       snake.dir(1, 0);
       up = false;

@@ -53,7 +53,7 @@ void loop() {
     if ((currtouched & _BV(i)) && !(lasttouched & _BV(i)) ) {
 //      Serial.print(i); Serial.println(" touched");
       Serial.print(i);
-      Serial.println()
+      Serial.println();
     }
     // if it *was* touched and now *isnt*, alert!
     if (!(currtouched & _BV(i)) && (lasttouched & _BV(i)) ) {
