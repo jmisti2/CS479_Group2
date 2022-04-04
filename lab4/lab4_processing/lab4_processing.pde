@@ -21,7 +21,8 @@ public class Food {
     this.y *= scale;
   }
   
-}
+}//food class ends here
+
 public class Snake {
   int x = boardX;
   int y = boardY;
@@ -56,13 +57,11 @@ public class Snake {
         startSnake.add(boardY);//index 1 = y
         this.tail.add(startSnake);
         this.gameLost = true;
-        
         println("collision");
       }
     }
   }
   public void update() {
-    //println("total : " + this.total + " tail size : " + this.tail.size());
     //If the snake hasn't eaten food, just shift it forward
     if(this.total == this.tail.size()) {
       for(int i = 0; i < this.tail.size() - 1; i++) {
@@ -72,20 +71,17 @@ public class Snake {
       head.add(this.x);
       head.add(this.y);
       this.tail.set(this.total - 1, head);
-      //println("yessS");
     } else {
       ArrayList<Integer> head = new ArrayList<Integer>();
       head.add(this.x);
       head.add(this.y);
       this.tail.add(head);
     }
-    
     this.x += this.xspeed * this.scale;
     this.y += this.yspeed * this.scale;
     
     this.x = constrain(this.x, boardX, boardX + boardWidth - this.squareSize);
     this.y = constrain(this.y, boardY, boardY + boardHeight - this.squareSize);
-
   }
   
   public void show() {
@@ -112,8 +108,7 @@ public class Snake {
       return false;
     }
   }
-  
-}
+}//snake class ends here
 
 //Images <arrow_orientation_brightness> i.e a_l_d = arrow_left_dark, a_u_l = arrow_up_light
 PImage a_u_l;
@@ -142,6 +137,7 @@ boolean introScreen = true;
 boolean blink = false;
 boolean pause = false;
 int prevTime;
+boolean paused = false;
 
 //flags to keep track of direction before pause
 boolean left = false;
@@ -335,20 +331,36 @@ void draw() {
     //Draw the snake
     //the game is ongoing
     if(!snake.gameLost) {
-      snake.selfCollision();
-      snake.update();
-      snake.show();
-      //draw the food
-      // If the food is eaten, chenge the location
-      fill(204, 0, 0);
-      stroke(255, 77, 77);
-      if(snake.eat(food)) {
-        pickFoodLocation();
-      } 
-      rect(food.x, food.y, snake.scale, snake.scale);
+      
+      if(!paused) {
+        snake.selfCollision();
+        snake.update();
+        snake.show();
+        //draw the food
+        // If the food is eaten, chenge the location
+        fill(204, 0, 0);
+        stroke(255, 77, 77);
+        if(snake.eat(food)) {
+          pickFoodLocation();
+        } 
+        rect(food.x, food.y, snake.scale, snake.scale);     
+      } else {
+        //Show the game lost screen
+        fill(13, 26, 2);
+        stroke(67, 115, 20);
+        rect(200, 200, 400, 300, 20);
+        fill(112, 209, 15);
+        textFont(mainFont, 30);
+        text("GAME PAUSED!", 270, 280);
+        textSize(20);
+        fill(96, 166, 36);
+        text("Press PAUSE to", 240, 370); //press qp
+        text("resume the game", 290, 400);
+      }
+ 
     } 
     //the user lost
-    else {
+    else if(snake.gameLost){
       //Show the game lost screen
       fill(13, 26, 2);
       stroke(67, 115, 20);
@@ -358,9 +370,10 @@ void draw() {
       text("GAME OVER!", 270, 280);
       textSize(20);
       fill(96, 166, 36);
-      text("Press Pause button to restart", 220, 370); //press q 
-      text("the game", 320, 400);
+      text("Press Right Arrow to", 240, 370); //press q 
+      text("restart the game", 290, 400);
     }
+    
   }
 
 }
@@ -417,29 +430,19 @@ void keyPressed() {
   }
   else if(key == 'q') {
     //restarts the game
-    if(key == 'q' && snake.gameLost){
+    if(snake.gameLost){
       snake.gameLost = false;
+    } 
+  }
+  else if(key == 'y') {
+    introScreen = false;
+  }
+  else if(key == 'p') {
+    if(!paused) {
+      paused = true;
+      println("paused");
     } else {
-      introScreen = false;
-      pausecount++;
-      if(pausecount > 1){ // past intro screen
-        if (pausecount%2 == 0){
-          pause = true;
-          snake.dir(0,0);
-         }else {
-           
-           pause = false;
-           if(up == true){
-             snake.dir(0,-1);
-           }else if(down == true){
-             snake.dir(0,1);
-           }else if(left == true){
-             snake.dir(-1,0);
-           }else if(right == true){
-             snake.dir(1,0);
-           }
-         }
-      }
+      paused = false;
     }
   }
 }
