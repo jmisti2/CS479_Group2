@@ -7,6 +7,8 @@ int16_t AcX,AcY,AcZ,Tmp,GyX,GyY,GyZ;
 int resPin = 4;
 int mfioPin = 5;
 
+int fsrRead;
+
 SparkFun_Bio_Sensor_Hub bioHub(resPin, mfioPin); 
 bioData body;  
 
@@ -59,6 +61,10 @@ void loop() {
   Serial.println();
   Serial.print("Status:");
   Serial.print(body.status);
+  Serial.println();
+
+  fsrRead = analogRead(A0);
+  Serial.print(fsrRead);
   Serial.println();
   
   delay(333);
