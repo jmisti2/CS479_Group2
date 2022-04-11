@@ -1,10 +1,20 @@
+#include <SparkFun_Bio_Sensor_Hub_Library.h>
 #include<Wire.h>
 const int MPU=0x68; 
 int16_t AcX,AcY,AcZ,Tmp,GyX,GyY,GyZ;
 
+// Reset pin, MFIO pin
+int resPin = 4;
+int mfioPin = 5;
+
+SparkFun_Bio_Sensor_Hub bioHub(resPin, mfioPin); 
+bioData body;  
+
 void setup() {
   // put your setup code here, to run once:
   Wire.begin();
+  int result = bioHub.begin();
+  int error = bioHub.configBpm(MODE_ONE); // Configuring just the BPM settings. 
   Wire.beginTransmission(MPU);
   Wire.write(0x6B); 
   Wire.write(0);    
@@ -36,5 +46,20 @@ void loop() {
   Serial.print(" | Y = "); Serial.print(GyY);
   Serial.print(" | Z = "); Serial.println(GyZ);
   Serial.println(" ");
+
+  body = bioHub.readBpm();
+  Serial.print("Heartrate:");
+  Serial.print(body.heartRate); 
+  Serial.println();
+  Serial.print("Confidence:");
+  Serial.print(body.confidence); 
+  Serial.println();
+  Serial.print("Oxygen:");
+  Serial.print(body.oxygen); 
+  Serial.println();
+  Serial.print("Status:");
+  Serial.print(body.status);
+  Serial.println();
+  
   delay(333);
 }
