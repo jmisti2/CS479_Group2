@@ -9,6 +9,13 @@ int mfioPin = 5;
 
 int fsrRead;
 
+int minVal=265;
+int maxVal=402;
+
+double x;
+double y;
+double z;
+
 SparkFun_Bio_Sensor_Hub bioHub(resPin, mfioPin); 
 bioData body;  
 
@@ -34,37 +41,42 @@ void loop() {
   AcX=Wire.read()<<8|Wire.read();    
   AcY=Wire.read()<<8|Wire.read();  
   AcZ=Wire.read()<<8|Wire.read();  
-  GyX=Wire.read()<<8|Wire.read();  
-  GyY=Wire.read()<<8|Wire.read();  
-  GyZ=Wire.read()<<8|Wire.read();  
-  
-  Serial.print("Accelerometer: ");
-  Serial.print("X = "); Serial.print(AcX);
-  Serial.print(" | Y = "); Serial.print(AcY);
-  Serial.print(" | Z = "); Serial.println(AcZ); 
-  
-  Serial.print("Gyroscope: ");
-  Serial.print("X = "); Serial.print(GyX);
-  Serial.print(" | Y = "); Serial.print(GyY);
-  Serial.print(" | Z = "); Serial.println(GyZ);
-  Serial.println(" ");
+//  GyX=Wire.read()<<8|Wire.read();  
+//  GyY=Wire.read()<<8|Wire.read();  
+//  GyZ=Wire.read()<<8|Wire.read();  
+
+  Serial.print(AcX);
+  Serial.print(",");
+  Serial.print(AcY);
+  Serial.print(",");
+  Serial.print(AcZ);
+  Serial.print(",");
+
+  int xAng = map(AcX,minVal,maxVal,-90,90);
+  int yAng = map(AcY,minVal,maxVal,-90,90);
+  int zAng = map(AcZ,minVal,maxVal,-90,90);
+   
+  x= RAD_TO_DEG * (atan2(-yAng, -zAng)+PI);
+  y= RAD_TO_DEG * (atan2(-xAng, -zAng)+PI);
+  z= RAD_TO_DEG * (atan2(-yAng, -xAng)+PI);
+
+  //angle x
+  Serial.print(x);
+  Serial.print(",");
+  //angle y
+  Serial.print(y);
+  Serial.print(",");
+  //angle z
+  Serial.print(z);
+  Serial.print(",");
 
   body = bioHub.readBpm();
-  Serial.print("Heartrate:");
   Serial.print(body.heartRate); 
-  Serial.println();
-  Serial.print("Confidence:");
-  Serial.print(body.confidence); 
-  Serial.println();
-  Serial.print("Oxygen:");
-  Serial.print(body.oxygen); 
-  Serial.println();
-  Serial.print("Status:");
-  Serial.print(body.status);
-  Serial.println();
+  Serial.print(",");
 
   fsrRead = analogRead(A0);
   Serial.print(fsrRead);
+  Serial.print(",");
   Serial.println();
   
   delay(333);
