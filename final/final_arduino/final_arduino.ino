@@ -3,6 +3,8 @@
 const int MPU=0x68; 
 int16_t AcX,AcY,AcZ,Tmp,GyX,GyY,GyZ;
 
+//acx,acy,acz,xang,yang,zang,bpm,fsr
+
 // Reset pin, MFIO pin
 int resPin = 4;
 int mfioPin = 5;
