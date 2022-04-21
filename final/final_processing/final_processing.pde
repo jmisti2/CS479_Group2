@@ -7,9 +7,13 @@ Serial myPort;
 String val;
 
 int acx, acy, acz, xang, yang, zang, bpm, fsr;
+int xangAvg, yangAvg, zangAvg;
+String angleRating = "";
 
 int punchCount;
 int punchSpeed;
+float punchRating;
+
 boolean punchDetected;
 
 ArrayList<Integer> acxList = new ArrayList<Integer>();
@@ -23,7 +27,7 @@ ArrayList<String> angleList = new ArrayList<String>();
 void setup() {
     size(500, 500); // window size
     // List all the available serial ports
-    String portName = Serial.list()[2];
+    String portName = Serial.list()[3];
     myPort = new Serial(this, portName, 115200);
 }
 
@@ -45,12 +49,6 @@ void draw() {
           zang = int(list[5]);
           bpm = int(list[6]);
           fsr = int(list[7]);
-          print(acx);
-          print(",");
-          print(acy);
-          print(",");
-          print(acz);
-          println();
         }
       }
     }
@@ -77,8 +75,10 @@ void draw() {
     }
     acxList.add(acx);
     
+    println(acx+","+acy+","+acz);
+    
     //detects punch
-    if(acx > 1000){
+    if(acx > 1000 && acz < 15000){
       fill(255,0,0);
       text("Punched", 50, 150);
       punchDetected = true;
@@ -86,24 +86,46 @@ void draw() {
     }
     else{
       if(punchDetected){
-        println(xangList);
-        println(yangList);
-        println(zangList);
         for(int i = 0; i < 30; i++){
           angleList.add(detectAngle(xangList.get(i),yangList.get(i),zangList.get(i)));
+          xangAvg += xangList.get(i);
+          yangAvg += yangList.get(i);
+          zangAvg += zangList.get(i);
         }
-        println(angleList);
+        xangAvg = xangAvg/30;
+        yangAvg = yangAvg/30;
+        zangAvg = zangAvg/30;
+                
         angleList = new ArrayList<String>();
         
         punchSpeed = findMax(acxList);
+        
+        punchRating = (((float)punchSpeed/20000)*100 + ((float)xangAvg/100)*100 + ((float)yangAvg/200)*100 + ((float)zangAvg/100)*100)/4;
+        //punchRating = ((float)punchSpeed/20000)*100;
+
+        
         punchCount++;
+        
+        if(xangAvg > 80 && yangAvg > 150 && zang > 100){
+          angleRating = "Good Angle";
+        }
+        else{
+          angleRating = "Bad Angle";
+        }
       }
       punchDetected = false;
     }
     
     text("Punch Count: " + punchCount, 50, 50);
     text("Punch Speed: " + punchSpeed, 50, 100);
+    text("X Avg: " + xangAvg, 50, 200);
+    text("Y Avg: " + yangAvg, 50, 250);
+    text("Z Avg: " + zangAvg, 50, 300);
+    text("Angle Rating: " + angleRating, 50, 350);
+    text("Punch Score: " + punchRating, 50, 400);
     
+    
+     
 }
 
 String detectAngle(int x, int y, int z){
