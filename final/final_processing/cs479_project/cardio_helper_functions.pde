@@ -10,7 +10,7 @@ GPointsArray heartrates;//store the heartrates for the graph
 int maxPoints = 150;
 int plottingTimer = 0;
 int seconds = 0;
-int bpm = 0;
+//int bpm = 0;
 GPlot plot;
 //workout
 boolean cardioStarted = false;
@@ -19,12 +19,21 @@ int strikeTimer;
 boolean newStrikes = false;
 String upper_strike1 = ""; String upper_strike2 = ""; String lower_strike = "";
 float targetSpeed = 0.0;
+String predCardioZone = "";
+boolean prevStats = false;
+boolean currStats = false;
+int pastAvgBPM = 0;
+int pastAvgCalories = 0;
+String past_zone = "";
+int currBPM = 0;
+int currCalories = 0;
+String currZone = "";
 //CP5 UI elements
-ControlP5 c1;
-ControlP5 c2;
-ControlP5 c3;
-ControlP5 c4;
-ControlP5 c5;
+ControlP5 cameraOnController;
+ControlP5 cameraOffController;
+ControlP5 startCardioController;
+ControlP5 backController;
+ControlP5 workoutsScreenController;
 ControlP5 c6;
 PFont buttonFont;
 Button cameraOnButton;
@@ -80,6 +89,31 @@ String[] drawTargetsHelper() {
   String[] combo = {upper_strike1, upper_strike2, lower_strike};
   return combo;
 }
+
+void saveStats() {
+  //if the workout ended and we have not yet recorded the stats, save them
+  if(!currStats) {
+    TableRow curr_stats = cardioTable.addRow();
+    
+    float cals = (float(userTable.getString(0, "Weight")) / 2.20462) * 9.5 * 0.0175 * 15;
+    int currentCalories = int(cals);
+    int avgBPM = int((.5*veryLightZone + .6*lightZone + .7*moderateZone + .8*hardZone + .9*maxZone) / 
+                      (veryLightZone + lightZone + moderateZone + hardZone + maxZone) );
+    curr_stats.setString("CaloriesBurned", String.valueOf(currentCalories));
+    curr_stats.setString("LongestCardioZone", predCardioZone);
+    curr_stats.setString("AverageBPM", String.valueOf(avgBPM));
+    saveTable(cardioTable, "tables/cardioTable.csv");
+    
+    currStats = true;
+    
+    println("stats save: " + cals + " " + avgBPM);
+  }
+}
+
+void drawBag() {
+  image(cardio_bag, cardioAnimationX-70, cardioAnimationY, cardioAnimationW+150, cardioAnimationH);
+}
+
 void drawTargets() {
   if(newStrikes) {
     String[] strikes = drawTargetsHelper();
@@ -106,12 +140,12 @@ void drawTargets() {
 }
 
 
-void initializeButtons(ControlP5 c1, ControlP5 c2, ControlP5 c3, ControlP5 c4) {
-  c1.setAutoDraw(false); c2.setAutoDraw(false); c3.setAutoDraw(false); c4.setAutoDraw(false);
-  Button cameraOnButton = c1.addButton("Turn Camera On", 0, cameraX + 60, cameraY + 100, 230, 70);
-  Button cameraOffButton = c2.addButton("Turn Camera Off", 0, cameraX + 60, cameraY - 100, 230, 70);
-  Button startButton = c3.addButton("Start", 0, 130, 20, 100, 50);
-  Button backButton = c4.addButton("Back", 0, 20, 20, 100, 50);
+void initializeButtons(ControlP5 cameraOnController, ControlP5 cameraOffController, ControlP5 startCardioController, ControlP5 backController) {
+  cameraOnController.setAutoDraw(false); cameraOffController.setAutoDraw(false); startCardioController.setAutoDraw(false); backController.setAutoDraw(false);
+  Button cameraOnButton = cameraOnController.addButton("Turn Camera On", 0, cameraX + 60, cameraY + 100, 230, 70);
+  Button cameraOffButton = cameraOffController.addButton("Turn Camera Off", 0, cameraX + 60, cameraY - 100, 230, 70);
+  Button startButton = startCardioController.addButton("Start", 0, 130, 20, 100, 50);
+  Button backButton = backController.addButton("Back", 0, 20, 20, 100, 50);
   cameraOnButton.setFont(createFont("Arial", 15)).setColorBackground(color(55, 186, 22)).setColorForeground(color(60, 232, 16));
   cameraOffButton.setFont(createFont("Arial", 15)).setColorBackground(color(173, 39, 29)).setColorForeground(color(230, 28, 14));
   startButton.setFont(createFont("AvenirNext-Medium", 15)).setColorBackground(color(7, 27, 110)).setColorForeground(color(12, 43, 173));
@@ -133,7 +167,7 @@ void initializeButtons(ControlP5 c1, ControlP5 c2, ControlP5 c3, ControlP5 c4) {
   });
   backButton.addCallback(new CallbackListener() {
     public void controlEvent(CallbackEvent theEvent) {
-      if(theEvent.getAction() == ControlP5.ACTION_PRESSED) {cardioMode = false;}
+      if(theEvent.getAction() == ControlP5.ACTION_PRESSED) {cardioMode = false; workoutsScreen = true;}
     }
   });
 }
@@ -148,12 +182,12 @@ void drawTimer() {
   //println(workoutTimer);
 }
 void drawBackButton() {
-  c4.draw();
+  backController.draw();
 }
 
 void drawStartButton() {
-  if(!cardioStarted) {
-    c3.draw();
+  if(!cardioStarted && workoutTimer != 0) {
+    startCardioController.draw();
   }
 }
 
@@ -178,9 +212,9 @@ void drawCameraButtons() {
   
   //Draw the on-button if camera is off
   if(!cameraOn) {
-    c1.draw();
+    cameraOnController.draw();
   } else {
-    c2.draw();
+    cameraOffController.draw();
     if (cam.available() == true) {
       cam.read();
     }
@@ -198,49 +232,62 @@ void drawStats() {
   fill(255);
   rect(statsX, statsY, statsW, statsH);
   
-  //Get past average BPM, and average calories burned
-  int pastAvgBPM = 0;
-  int pastAvgCalories = 0;
-  int[] zones = {0,0,0,0,0};
-  int[] curr_zones = {veryLightZone, lightZone, moderateZone, hardZone, maxZone};
-  for(int i = 0; i < cardioTable.getRowCount(); i++) {
-    pastAvgBPM += int(cardioTable.getString(i, "AverageBPM"));
-    pastAvgCalories += int(cardioTable.getString(i, "CaloriesBurned"));
-    if(cardioTable.getString(i, "LongestCardioZone").equals("very light")) {zones[0] += 1;}
-    else if(cardioTable.getString(i, "LongestCardioZone").equals("light")) {zones[1] += 1;}
-    else if(cardioTable.getString(i, "LongestCardioZone").equals("moderate")) {zones[2] += 1;}
-    else if(cardioTable.getString(i, "LongestCardioZone").equals("hard")) {zones[3] += 1;}
-    else if(cardioTable.getString(i, "LongestCardioZone").equals("max")) {zones[4] += 1;}
-  }
-  //Determine which cardio zone the user has been the longest in on average
-  int past_max = zones[0];int past_i = 0;
-  int curr_max = curr_zones[0]; int curr_i = 0;
-  String past_zone = "";
-  String curr_zone = "";
-  for(int i = 0; i < 5; i++) {
-    if(zones[i] > past_max) {past_max = zones[i]; past_i = i;}
-    if(curr_zones[i] > curr_max) {curr_max = curr_zones[i]; curr_i = i;}
-  }
-  //get the past predominant zone
-  if(past_i == 0) {past_zone = "Very Light";}
-  else if(past_i == 1) {past_zone = "Light";}
-  else if(past_i == 2) {past_zone = "Moderate";}
-  else if(past_i == 3) {past_zone = "Hard";}
-  else {past_zone = "Max";}
-  //get the current predominant zone
-  if(curr_i == 0) {curr_zone = "Very Light";}
-  else if(curr_i == 1) {curr_zone = "Light";}
-  else if(curr_i == 2) {curr_zone = "Moderate";}
-  else if(curr_i == 3) {curr_zone = "Hard";}
-  else {curr_zone = "Max";}
-
-  pastAvgBPM /= cardioTable.getRowCount();
-  pastAvgCalories /= cardioTable.getRowCount();
+  if(!prevStats) {
+    int[] zones = {0,0,0,0,0};
+    for(int i = 0; i < cardioTable.getRowCount(); i++) {
+      pastAvgBPM += int(cardioTable.getString(i, "AverageBPM"));
+      pastAvgCalories += int(cardioTable.getString(i, "CaloriesBurned"));
+      if(cardioTable.getString(i, "LongestCardioZone").equals("very light")) {zones[0] += 1;}
+      else if(cardioTable.getString(i, "LongestCardioZone").equals("light")) {zones[1] += 1;}
+      else if(cardioTable.getString(i, "LongestCardioZone").equals("moderate")) {zones[2] += 1;}
+      else if(cardioTable.getString(i, "LongestCardioZone").equals("hard")) {zones[3] += 1;}
+      else if(cardioTable.getString(i, "LongestCardioZone").equals("max")) {zones[4] += 1;}
+    }
+    int past_max = zones[0];int past_i = 0;
+    for(int i = 0; i < 5; i++) {
+      if(zones[i] > past_max) {past_max = zones[i]; past_i = i;}
+    }
+    //get the past predominant zone
+    if(past_i == 0) {past_zone = "Very Light";}
+    else if(past_i == 1) {past_zone = "Light";}
+    else if(past_i == 2) {past_zone = "Moderate";}
+    else if(past_i == 3) {past_zone = "Hard";}
+    else {past_zone = "Max";}
+    
+    pastAvgBPM /= cardioTable.getRowCount();
+    pastAvgCalories /= cardioTable.getRowCount();
+    prevStats = true;
+  }//end if
   
-  //Calculate the current caloric expenditure (weight_lb/2.20462) * 9.5 * 0.0175 * minutes
-  float cals = (float(userTable.getString(0, "Weight")) / 2.20462) * 9.5 * 0.0175 * (seconds / 60);
-  int currentCalories = int(cals);
+  //if the workout is still ongoing, keep calculating the current stats
+  if(workoutTimer > 0) {
+    //Get past average BPM, and average calories burned
+    int[] curr_zones = {veryLightZone, lightZone, moderateZone, hardZone, maxZone};
+    
+    //Determine which cardio zone the user has been the longest in on average
+    int curr_max = curr_zones[0]; int curr_i = 0;
+    String curr_zone = "";
+    for(int i = 0; i < 5; i++) {
+      if(curr_zones[i] > curr_max) {curr_max = curr_zones[i]; curr_i = i;}
+    }
+    
+    //get the current predominant zone
+    if(curr_i == 0) {curr_zone = "Very Light";}
+    else if(curr_i == 1) {curr_zone = "Light";}
+    else if(curr_i == 2) {curr_zone = "Moderate";}
+    else if(curr_i == 3) {curr_zone = "Hard";}
+    else {curr_zone = "Max";}
+    
+    //Calculate the current caloric expenditure (weight_lb/2.20462) * 9.5 * 0.0175 * minutes
+    float cals = (float(userTable.getString(0, "Weight")) / 2.20462) * 9.5 * 0.0175 * (seconds / 60);
+    int currentCalories = int(cals);
+    predCardioZone = curr_zone;
+    currBPM = bpm;
+    currCalories = currentCalories;
+    currZone = curr_zone;
+  }
   
+  //Display the stats
   textSize(30);
   fill(0);
   text("Past Workouts Stats", statsX + 40, statsY + 27);
@@ -257,19 +304,21 @@ void drawStats() {
   text("Current Workout Stats", statsX + 30, statsY + 147);
   textSize(20);
   fill(bpmToColor(bpm));
-  text("Current BPM: " + bpm, statsX + 10, statsY + 175);
+  text("Current BPM: " + currBPM, statsX + 10, statsY + 175);
   fill(0);
-  text("Current Caloric Expenditure: " + currentCalories, statsX + 10, statsY + 200);
-  fill(zoneToColor(curr_zone));
-  text("Predominant Cardio Zone: " + curr_zone, statsX + 10, statsY + 225); 
+  text("Current Caloric Expenditure: " + currCalories, statsX + 10, statsY + 200);
+  fill(zoneToColor(currZone));
+  text("Predominant Cardio Zone: " + currZone, statsX + 10, statsY + 225); 
 }
 
 color bpmToColor(int bpm) {
-  if (bpm < 60) {return color(142, 150, 141);}//gray 
-  else if(bpm < 70) {return color(56, 140, 209);}//blue
-  else if(bpm < 80) {return color(28, 199, 48);}//green
-  else if(bpm < 90) {return  color(230, 142, 60);}//orange
-  else {return color(204, 38, 33);}//red
+  int age = int(userTable.getString(0, "Age"));
+  int max = 220 - age;
+  if (bpm < .5 * max) {return color(142, 150, 141);}//gray 
+  else if(bpm < .6 * max) {return color(56, 140, 209);}//blue
+  else if(bpm < .7 * max) {return color(28, 199, 48);}//green
+  else if(bpm < .8 * max) {return  color(230, 142, 60);}//orange
+  else {maxZone++; return color(204, 38, 33);}//red
 }
 
 color zoneToColor(String zone) {
@@ -340,10 +389,12 @@ void drawBarChart() {
 }
 //Determine the color of ther bpm based on its value
 int determineBPMColor(int bpm) {
-  if (bpm < 60) {veryLightZone++; return color(142, 150, 141);}//gray 
-  else if(bpm < 70) {lightZone++; return color(56, 140, 209);}//blue
-  else if(bpm < 80) {moderateZone++; return color(28, 199, 48);}//green
-  else if(bpm < 90) {hardZone++; return  color(230, 142, 60);}//orange
+  int age = int(userTable.getString(0, "Age"));
+  int max = 220 - age;
+  if (bpm < .5 * max) {veryLightZone++; return color(142, 150, 141);}//gray 
+  else if(bpm < .6 * max) {lightZone++; return color(56, 140, 209);}//blue
+  else if(bpm < .7 * max) {moderateZone++; return color(28, 199, 48);}//green
+  else if(bpm < .8 * max) {hardZone++; return  color(230, 142, 60);}//orange
   else {maxZone++; return color(204, 38, 33);}//red
 } 
 
@@ -393,5 +444,5 @@ void addPoints(int c, int bpm) {
 }
 
 void keyPressed() {
-  if(key == 'z') {workoutTimer -= 100;}
+  if(key == 'z') {workoutTimer -= 110;}
 }
