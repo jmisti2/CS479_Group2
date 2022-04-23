@@ -4,6 +4,11 @@ int cardioY = 50;
 int cardioW = 360;
 int cardioH = height;
 
+//images
+PImage cardio_button_image;
+PImage speed_button_image;
+PImage accuracy_button_image;
+
 
 void initializeWorkoutsScreenController(ControlP5 c) {
   c.setAutoDraw(false);
@@ -11,24 +16,24 @@ void initializeWorkoutsScreenController(ControlP5 c) {
   //Add one button for each workout
   Button cardio = c.addButton("Cardio")
      .setValue(0)
-     .setPosition(80, 140)
-     .setSize(200,40)
+     .setPosition(90, 220)
+     .setSize(200,60)
      .setFont(createFont("Arial", 20))
      .setColorBackground(color(43, 199, 38))
      .setColorForeground(color(0, 252, 114));
      ;
   Button speed = c.addButton("Speed")
      .setValue(0)
-     .setPosition(440,140)
-     .setSize(200,40)
+     .setPosition(450,220)
+     .setSize(200,60)
      .setFont(createFont("Arial", 20))
      .setColorBackground(color(207, 35, 35))
      .setColorForeground(color(247, 5, 5));
      ;
   Button accuracy = c.addButton("Accuracy")
      .setValue(0)
-     .setPosition(800,140)
-     .setSize(200,40).setFont(createFont("Arial", 20))
+     .setPosition(810,220)
+     .setSize(200,60).setFont(createFont("Arial", 20))
      .setColorBackground(color(22, 122, 199))
      .setColorForeground(color(0, 141, 242));
      
@@ -71,5 +76,24 @@ void initializeWorkoutsScreenController(ControlP5 c) {
 }
 
 void drawWorkoutsScreen() {
+  
+  //title
+  textSize(50);
+  fill(0);
+  text("Choose the workout mode", 300, 80);
+  
+  //draw rectangles for each mode
+  stroke(0);
+  fill(255);
+  rect(20, 140, 340, 500);
+  rect(380, 140, 340, 500);
+  rect(740, 140, 340, 500);
+  
+  //draw the images
+  image(cardio_button_image, 45, 320, 280,300);
+  image(speed_button_image, 410, 320, 280,300);
+  image(accuracy_button_image, 770, 320, 280,300);
+  
+  //draw the buttons
   workoutsScreenController.draw();
 }
