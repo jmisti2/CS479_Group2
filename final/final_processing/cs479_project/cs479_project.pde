@@ -26,6 +26,9 @@ void setup() {
 
   //load images
   cardio_bag = loadImage("images/cardio_bag.png");
+  cardio_button_image = loadImage("images/cardio_button.jpeg");
+  speed_button_image = loadImage("images/speed_button.jpg");
+  accuracy_button_image = loadImage("images/accuracy_button.jpg");
   
   //establish the port
   String portName = Serial.list()[3];
@@ -103,6 +106,12 @@ void draw() {
  
     
   }//end cardio mode
+  else if(speedMode) {
+  
+  }//end speed mode
+  else if (accuracyMode) {
+  
+  }//end accuracy mode
   else if(workoutsScreen) {
     drawWorkoutsScreen();
   }
