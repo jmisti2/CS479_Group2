@@ -6,6 +6,8 @@ void setup() {
   heartrateColors = new color[maxPoints];
   heartrates = new GPointsArray(maxPoints);
   
+  
+  
   // Initialize the plot
   plot = new GPlot(this,plotX, plotY, plotW, plotH);
   initializePlot();
@@ -17,18 +19,24 @@ void setup() {
   //load the camera
   String[] cameras = Capture.list();
   cam = new Capture(this, cameras[0]);
+  cam.start();
   
   //initialize controlp5 objects
   cameraOnController = new ControlP5(this); cameraOffController = new ControlP5(this); 
   startCardioController = new ControlP5(this); backController = new ControlP5(this); workoutsScreenController = new ControlP5(this);
   initializeButtons(cameraOnController,cameraOffController,startCardioController,backController);
   initializeWorkoutsScreenController(workoutsScreenController);
+  
+  startAccuracyController = new ControlP5(this);
+  backController2 = new ControlP5(this);
+  initButtons(startAccuracyController, backController2);
 
   //load images
   cardio_bag = loadImage("images/cardio_bag.png");
   cardio_button_image = loadImage("images/cardio_button.jpeg");
   speed_button_image = loadImage("images/speed_button.jpg");
   accuracy_button_image = loadImage("images/accuracy_button.jpg");
+  punchImg = loadImage("images/punch.png");
   
   //establish the port
   String portName = Serial.list()[3];
@@ -107,10 +115,11 @@ void draw() {
     
   }//end cardio mode
   else if(speedMode) {
+    
   
   }//end speed mode
   else if (accuracyMode) {
-  
+    draw_accuracy();
   }//end accuracy mode
   else if(workoutsScreen) {
     drawWorkoutsScreen();
@@ -118,6 +127,3 @@ void draw() {
   
   //delay(500);
 }//End draw
-
-
-
