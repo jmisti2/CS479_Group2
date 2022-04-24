@@ -1,8 +1,8 @@
 //coordinates for each button and image
-int cardioX = 10;
-int cardioY = 50;
-int cardioW = 360;
-int cardioH = height;
+//int cardioX = 10;
+//int cardioY = 50;
+//int cardioW = 360;
+//int cardioH = height;
 
 //images
 PImage cardio_button_image;
@@ -59,6 +59,11 @@ void initializeWorkoutsScreenController(ControlP5 c) {
         currBPM = 0;
         currCalories = 0;
         cameraOn = false;
+        veryLightZone = 0;
+        lightZone = 0;
+        moderateZone = 0;
+        hardZone = 0;
+        maxZone = 0;
       }
     }
   });
