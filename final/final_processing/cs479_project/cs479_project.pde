@@ -96,13 +96,14 @@ void draw() {
     //Plot only every 1 second
     if(cardioStarted) {
       if(millis() - plottingTimer >= 1000) {    
-        //Generate a random bpm and its color
-        //if(Math.round(random(0,1)) == 0 ) {bpm = Math.round(random(50, 100));}
-        //Based on the value of the BPM determine its color
-        int c = determineBPMColor(bpm);
         
-        //Add the bpm and its color to the plot
-        addPoints(c, bpm);
+        //prevents adding 0 bpm which will distort the stats
+        if(bpm != 0) {
+          int c = determineBPMColor(bpm);
+        
+          //Add the bpm and its color to the plot
+          addPoints(c, bpm);
+        }
         
         plottingTimer = millis();
         workoutTimer--;
