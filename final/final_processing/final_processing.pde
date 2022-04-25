@@ -1,5 +1,5 @@
 void setup() {
-  size(1100, 750);
+  size(1100, 748);
   background(255);
     
   //Initialize the bpm array and color array
@@ -30,6 +30,15 @@ void setup() {
   startAccuracyController = new ControlP5(this);
   backController2 = new ControlP5(this);
   initButtons(startAccuracyController, backController2);
+  
+  startCardioController3 = new ControlP5(this); 
+  backController3 = new ControlP5(this);
+  speedController = new ControlP5(this); 
+  
+  cp5 = new ControlP5(this); 
+  initializeStatsController(cp5);
+  initializeSpeedButtons(startCardioController3,backController3);
+
 
   //load images
   cardio_bag = loadImage("images/cardio_bag.png");
@@ -124,6 +133,9 @@ void draw() {
   }//end accuracy mode
   else if(workoutsScreen) {
     drawWorkoutsScreen();
+  }
+  else if(!inputAdded) {
+    drawStatsInput(); 
   }
   
   //delay(500);
