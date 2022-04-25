@@ -293,7 +293,7 @@ void initButtons(ControlP5 startAccuracyController, ControlP5 backController2) {
         punchCount = 0;
         acc = 0;
         writeOnce = 0;
-        accuracyTimer = 10;
+        accuracyTimer = 120;
       }
     }
   });
@@ -313,7 +313,7 @@ void initButtons(ControlP5 startAccuracyController, ControlP5 backController2) {
         punchCount = 0;
         acc = 0;
         writeOnce = 0;
-        accuracyTimer = 10;
+        accuracyTimer = 120;
       }
     }
   });
