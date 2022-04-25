@@ -147,15 +147,16 @@ void drawStatsInput() {
 
 public void Continue() {
   //save stats to csv file
-  
-  TableRow userStats = userTable.addRow();
-  //Age, Sex, Weight, Height
-  
-  userStats.setString("Age", ageInput);
-  userStats.setString("Sex", s);
-  userStats.setString("Weight", weightInput);
-  userStats.setString("Height", heightInput);
-  saveTable(userTable, "tables/userTable.csv");
+  if(userTable.getRowCount() == 0){
+    TableRow userStats = userTable.addRow();
+    //Age, Sex, Weight, Height
+    
+    userStats.setString("Age", ageInput);
+    userStats.setString("Sex", s);
+    userStats.setString("Weight", weightInput);
+    userStats.setString("Height", heightInput);
+    saveTable(userTable, "tables/userTable.csv");
+  }
   
   
   //continue to next screen
