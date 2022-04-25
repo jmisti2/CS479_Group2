@@ -1,11 +1,11 @@
 import processing.serial.*;
 
 //modes
-boolean workoutsScreen = true;
+boolean workoutsScreen = false;
 boolean cardioMode = false;
 boolean speedMode = false;
 boolean accuracyMode = false;
-boolean statsMode = false;
+boolean statsMode = true;
 
 
 Serial myPort;
