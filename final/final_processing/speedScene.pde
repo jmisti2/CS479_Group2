@@ -14,11 +14,6 @@ int xangAvg2, yangAvg2, zangAvg2;
 String angleRating2 = "";
 
 int prevTime = 0;
-int intervalTimer = 0;
-int intervalNum = 0;
-int intervalSum = 0;
-int intervalsPassed = 0;
-int intervalStop = 0;
 int hits = 0;
 
 int punchCounter;
@@ -26,9 +21,6 @@ int punchSpeed2;
 int maxSpeed;
 float punchRating2;
 int fsrVal;
-float acel = 0;
-int writing = 0;
-
 boolean punchDetected2;
 
 int speedTimer = 60;
@@ -72,16 +64,9 @@ void initializeSpeedButtons(ControlP5 startSpeedController, ControlP5 backContro
         speedStart = true; 
         speedTimer = 60;
         prevTime = 0;
-        intervalTimer = 0;
-        intervalNum = 0;
-        intervalSum = 0;
-        intervalsPassed = 0;
-        intervalStop = 0;
         hits = 0;
         punchCounter = 0;
         punchSpeed2 = 0;
-        acel = 0;
-        writing = 0;
      }
     }
   });
@@ -95,16 +80,9 @@ void initializeSpeedButtons(ControlP5 startSpeedController, ControlP5 backContro
         newStrikes = true;
         speedTimer = 60;
         prevTime = 0;
-        intervalTimer = 0;
-        intervalNum = 0;
-        intervalSum = 0;
-        intervalsPassed = 0;
-        intervalStop = 0;
         hits = 0;
         punchCounter = 0;
         punchSpeed2 = 0;
-        acel = 0;
-        writing = 0;
       }
     }
   });
@@ -165,14 +143,13 @@ void drawSpeedScene(){
   speedTable = loadTable("tables/speedTable.csv", "header");
   
   //end of timer and write to data file stats
-  if(speedTimer == 0 && writing < 1){
+  if(speedTimer == 0 ){
       TableRow stats = speedTable.addRow();
       stats.setInt("Punches", punchCounter);
       stats.setInt("Max Speed", maxSpeed);
       stats.setString("Date", month() + "/" + day());
   
       saveTable(speedTable, "tables/accuracyTable.csv");
-      writing++;
   }
   
   if(speedStart && speedTimer > 0){
