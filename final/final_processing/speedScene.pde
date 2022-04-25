@@ -233,7 +233,7 @@ void drawSpeedScene(){
     text("Punch Stats", 60, 160); 
     textSize(30);
     text("Punch Count: " + punchCounter, 60, 200);
-    text("Punch Speed: " + punchSpeed2, 60, 240);
+    text("Punch Speed: " + punchSpeed/392 + " mph", 60, 240);
     text("Angle Rating: " + angleRating2, 60, 280);
     text("Punch Force: " + fsrVal, 60, 320);
     

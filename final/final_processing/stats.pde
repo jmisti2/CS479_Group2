@@ -6,7 +6,7 @@ import java.util.*;
 //ControlP5 cp5;
 ControlP5 cp5; //for stats input scene
 
-DropdownList sex;
+
 String nameInput;
 String ageInput;
 String weightInput;
@@ -20,9 +20,13 @@ Boolean inputAdded = false;
 
 void checkInput(){
   if(!inputAdded){
-    if(userTable.getString(0, "Age") == ""){
+    if(userTable.getRowCount() == 0){
       statsMode = true;
       inputAdded = true;
+      workoutsScreen = false;
+      cardioMode = false;
+      speedMode = false;
+      accuracyMode = false;
     } else{
       statsMode = false;
       workoutsScreen = true;
@@ -98,7 +102,7 @@ void initializeStatsController(ControlP5 cp5){
      .setBarHeight(50)
      .setItemHeight(50)
      .addItems(l)
-     .setType(ScrollableList.DROPDOWN) // currently supported DROPDOWN and LIST
+     //.setType(ScrollableList.DROPDOWN) // currently supported DROPDOWN and LIST
      ;
    cp5.addBang("Continue")
      .setPosition(500, 550)
@@ -114,10 +118,13 @@ void controlEvent(ControlEvent theEvent) {
     //println("event from group : "+theEvent.getGroup().getValue()+" from "+theEvent.getGroup());
   } 
   else if (theEvent.isController()) {
+    println(theEvent.getController().getValue());
     if(theEvent.getController().getValue() == 1.0){
-      s = "s";
-    } else if (theEvent.getController().getValue() == 2.0) {
       s = "m";
+      println("s:" + s);
+    } else if (theEvent.getController().getValue() == 0.0) {
+      s = "f";
+      println("s:" + s);
     }
   }
 }
@@ -137,12 +144,14 @@ void drawStatsInput() {
     
   nameInput = cp5.get(Textfield.class,"Name").getText();
   ageInput = cp5.get(Textfield.class,"Age").getText();
-  //age = Integer.parseInt(ageInput);
   weightInput = cp5.get(Textfield.class,"Weight").getText();
   heightInput = cp5.get(Textfield.class,"Height").getText();
-  //h = Float.parseFloat(heightInput);
   
   cp5.draw();
+}
+
+void dropdown(int index) {
+  println(cp5.get(ScrollableList.class, "Select Sex").getItem(index));
 }
 
 public void Continue() {

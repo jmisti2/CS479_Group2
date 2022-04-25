@@ -137,7 +137,7 @@ void draw() {
   else if(workoutsScreen) {
     drawWorkoutsScreen();
   }
-  else if(!statsMode) {
+  else if(statsMode) {
     drawStatsInput(); 
   }
   
