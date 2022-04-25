@@ -31,13 +31,13 @@ void setup() {
   backController2 = new ControlP5(this);
   initButtons(startAccuracyController, backController2);
   
-  startCardioController3 = new ControlP5(this); 
+  startSpeedController3 = new ControlP5(this); 
   backController3 = new ControlP5(this);
   speedController = new ControlP5(this); 
   
   cp5 = new ControlP5(this); 
   initializeStatsController(cp5);
-  initializeSpeedButtons(startCardioController3,backController3);
+  initializeSpeedButtons(startSpeedController3,backController3);
 
 
   //load images
@@ -46,9 +46,10 @@ void setup() {
   speed_button_image = loadImage("images/speed_button.jpg");
   accuracy_button_image = loadImage("images/accuracy_button.jpg");
   punchImg = loadImage("images/punch.png");
+  bg = loadImage("images/boxing.jpg");
   
   //establish the port
-  String portName = Serial.list()[3];
+  String portName = Serial.list()[1];
   myPort = new Serial(this, portName, 115200);
 }
 
@@ -73,6 +74,8 @@ void draw() {
         }
       }
     }
+    
+    checkInput();
   
   if(cardioMode) {
     //display workout timer
@@ -125,7 +128,7 @@ void draw() {
     
   }//end cardio mode
   else if(speedMode) {
-    
+    drawSpeedScene();
   
   }//end speed mode
   else if (accuracyMode) {
@@ -134,7 +137,7 @@ void draw() {
   else if(workoutsScreen) {
     drawWorkoutsScreen();
   }
-  else if(!inputAdded) {
+  else if(!statsMode) {
     drawStatsInput(); 
   }
   

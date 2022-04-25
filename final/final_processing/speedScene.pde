@@ -1,5 +1,5 @@
 
-ControlP5 startCardioController3;
+ControlP5 startSpeedController3;
 ControlP5 backController3;
 ControlP5 speedController;
 
@@ -50,17 +50,17 @@ ArrayList<Integer> intervalListY3 = new ArrayList<Integer>(Arrays.asList(330, 46
 
 
 void drawStartButton2() {
-  if(!cardioStarted && speedTimer != 0) {
+  if(!speedStart && speedTimer != 0) {
     startCardioController.draw();
   }
 }
 
-void initializeSpeedButtons(ControlP5 startCardioController, ControlP5 backController){
+void initializeSpeedButtons(ControlP5 startSpeedController, ControlP5 backController){
   speedController.setAutoDraw(false);
-  startCardioController3.setAutoDraw(false); 
+  startSpeedController3.setAutoDraw(false); 
   backController3.setAutoDraw(false);
  
-  Button startButton3 = startCardioController.addButton("Start", 0, 130, 20, 100, 50);
+  Button startButton3 = startSpeedController.addButton("Start", 0, 130, 20, 100, 50);
   Button backButton3 = backController.addButton("Back", 0, 20, 20, 100, 50);
   startButton3.setFont(createFont("Arial", 15)).setColorBackground(color(7, 27, 110)).setColorForeground(color(12, 43, 173));
   backButton3.setFont(createFont("Arial", 15)).setColorBackground(color(60, 34, 125)).setColorForeground(color(89, 44, 201));
@@ -70,6 +70,7 @@ void initializeSpeedButtons(ControlP5 startCardioController, ControlP5 backContr
     public void controlEvent(CallbackEvent theEvent) {
       if(theEvent.getAction() == ControlP5.ACTION_PRESSED) {
         speedStart = true; 
+        speedTimer = 60;
         prevTime = 0;
         intervalTimer = 0;
         intervalNum = 0;
@@ -87,11 +88,12 @@ void initializeSpeedButtons(ControlP5 startCardioController, ControlP5 backContr
   backButton3.addCallback(new CallbackListener() {
     public void controlEvent(CallbackEvent theEvent) {
       if(theEvent.getAction() == ControlP5.ACTION_PRESSED) {
+        speedStart = false;
         speedMode = false; 
         workoutsScreen = true;
         speedStart = false;
         newStrikes = true;
-        //speedTimer = 0;
+        speedTimer = 60;
         prevTime = 0;
         intervalTimer = 0;
         intervalNum = 0;
@@ -109,7 +111,7 @@ void initializeSpeedButtons(ControlP5 startCardioController, ControlP5 backContr
   
 }
 
-String detectAngle(int x, int y, int z){
+String detectAngle2(int x, int y, int z){
   
   if(x > 20 && y > 300 && z > 150 && z < 200){
     return "Left";
@@ -129,7 +131,7 @@ String detectAngle(int x, int y, int z){
   }
 }
 
-int findMax(ArrayList<Integer> arr){
+int findMax2(ArrayList<Integer> arr){
   int max = arr.get(0);
   for(int i = 1; i < arr.size(); i++){
     if (arr.get(i) > max){
@@ -144,6 +146,8 @@ void drawSpeedScene(){
   
   backController3.draw();
   speedController.draw();
+  startSpeedController3.draw();
+  
   stroke(0);
   fill(255);
   rect(cardioAnimationX, cardioAnimationY, cardioAnimationW, cardioAnimationH);
@@ -170,6 +174,7 @@ void drawSpeedScene(){
       saveTable(speedTable, "tables/accuracyTable.csv");
       writing++;
   }
+  
   if(speedStart && speedTimer > 0){
     if(millis() - prevTime >= 1000){
       speedTimer--;
@@ -214,7 +219,7 @@ void drawSpeedScene(){
     else{
       if(punchDetected2){
         for(int i = 0; i < 30; i++){
-          angleList3.add(detectAngle(xangList3.get(i),yangList3.get(i),zangList3.get(i)));
+          angleList3.add(detectAngle2(xangList3.get(i),yangList3.get(i),zangList3.get(i)));
           xangAvg2 += xangList3.get(i);
           yangAvg2 += yangList3.get(i);
           zangAvg2 += zangList3.get(i);
@@ -225,8 +230,8 @@ void drawSpeedScene(){
                 
         angleList3 = new ArrayList<String>();
         
-        punchSpeed2 = findMax(acxList3);
-        fsrVal = findMax(fsrList3);
+        punchSpeed2 = findMax2(acxList3);
+        fsrVal = findMax2(fsrList3);
         
         punchRating2 = (((float)punchSpeed2/20000)*100 + ((float)xangAvg2/100)*100 + ((float)yangAvg2/200)*100 + ((float)zangAvg2/100)*100)/4;
         punchCounter++;

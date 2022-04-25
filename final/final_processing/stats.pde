@@ -162,6 +162,3 @@ public void Continue() {
   workoutsScreen = true;
   statsMode = false;
 }
-
-
-
